@@ -1,0 +1,27 @@
+{
+  "name": "project-two",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/niralpokal/project-two.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/niralpokal/project-two/issues"
+  },
+  "homepage": "https://github.com/niralpokal/project-two#readme",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4",
+    "gulp": "^3.9.1"
+  },
+  "devDependencies": {
+    "gulp-nodemon": "^2.0.6"
+  }
+}
