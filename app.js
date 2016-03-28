@@ -1,5 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+
 var users= [];
 var userNumber = 0;
 function User(user){
@@ -7,8 +9,8 @@ function User(user){
   this.pass = user.pass;
   this.id = user.id;
   this.email = user.email;
-  this.followers = []
-  this.following = []
+  this.followers = [];
+  this.following = [];
   this.numberOfFollowers = 0;
   this.numerOfFollowing = 0;
   this.settingColor = 'blue';
@@ -26,7 +28,7 @@ function newUser(user){
 
 function checkLogin(check){
   for(var i; i< users.length; i++){
-    if( check.name == users[i].name && check.pass == users[i].pass){
+    if( check.id == users[i].id && check.pass == users[i].pass){
       return user[i];
     }
   }
@@ -50,7 +52,7 @@ app.post('/login', jsonParser, function(req, res) {
   var result = checkLogin(req.boy);
   res.cookie({});
   res.json(result);
-  console.log("I sent settings for: " + result.name);
+  console.log("I sent settings for: " + req.body.id);
 });
 
 

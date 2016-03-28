@@ -1,14 +1,43 @@
 var signUpForm = document.getElementById('sign-up');
+var loginForm =document.getElementById('login')
 var loginButton = document.getElementById('loginButton');
 var signUpButton = document.getElementById('signUpButton')
+var signUpBtn = document.getElementById('signUpBtn');
+var loginBtn = document.getElementById('loginBtn')
 
-//loginButton.addEventListener('')
-signUpButton.addEventListener('click', function(event){
-  event.preventDefault();
-  signUpForm.className="";
+
+loginButton.addEventListener('click',function(){
+  loginForm.className='';
+})
+
+signUpButton.addEventListener('click', function(){
+  signUpForm.className='';
 });
 
-signUpForm.addEventListener('submit', function(event){
+loginBtn.addEventListener('click', function(event){
+  event.preventDefault();
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/login', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  var id = document.getElementById('loginName').value;
+  var pass = document.getElementById('loginPass').value;
+  console.log(id);
+  console.log(pass);
+  var myData = {
+    id:id,
+    pass:pass
+  }
+  var payload = JSON.stringify(myData);
+  console.log(payload);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if (xhr.status === 200){
+      var response = JSON.parse(xhr.responseText);
+      console.log(response);
+    }
+  }
+})
+signUpBtn.addEventListener('click', function(event){
   event.preventDefault();
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '/signup', true);
