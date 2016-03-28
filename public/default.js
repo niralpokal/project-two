@@ -6,12 +6,14 @@ var signUpBtn = document.getElementById('signUpBtn');
 var loginBtn = document.getElementById('loginBtn')
 
 
+
+
 loginButton.addEventListener('click',function(){
-  loginForm.className='';
+  $('#login').modal('show')
 })
 
 signUpButton.addEventListener('click', function(){
-  signUpForm.className='';
+  $('#sign-up').modal('show')
 });
 
 loginBtn.addEventListener('click', function(event){
@@ -37,6 +39,7 @@ loginBtn.addEventListener('click', function(event){
     }
   }
 })
+
 signUpBtn.addEventListener('click', function(event){
   event.preventDefault();
   var xhr = new XMLHttpRequest();

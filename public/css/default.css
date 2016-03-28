@@ -1,0 +1,24 @@
+#header {
+  position: absolute;
+  background-image: url("../images/background_header.png");
+  background-size: cover;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 350px;
+  z-index: 1;
+
+ }
+#navbar {
+  margin-bottom: 0;
+  background: transparent;
+  border: none;
+  z-index: 3;
+ }
+ #jumbotron {
+   color: white;
+   position: relative;
+   background: transparent;
+   z-index: 3;
+ }
+#loginButton { margin-right: 5px; }

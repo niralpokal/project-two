@@ -3,7 +3,7 @@ var nodemon = require('gulp-nodemon')
 
 
 gulp.task('copy', function(){
-  return gulp.src(['./default.js', './index.html'])
+  return gulp.src(['./default.js', './index.html', './css/default.css','./images/*.png'], {base: '.'}) 
   .pipe(gulp.dest('./public/'));
 });
 
