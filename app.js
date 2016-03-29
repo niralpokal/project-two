@@ -31,7 +31,7 @@ function searchMongo(payload, b){
  }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('Finding something in the dateabase');
+    console.log('Finding something in the database');
     findUsers(db,function(){
       db.close();
       myEvent.emit(b)

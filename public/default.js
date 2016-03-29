@@ -4,7 +4,13 @@ var loginButton = document.getElementById('loginButton');
 var signUpButton = document.getElementById('signUpButton')
 var signUpBtn = document.getElementById('signUpBtn');
 var loginBtn = document.getElementById('loginBtn')
-var socket = io();
+//var socket = io();
+var landingPage = document.getElementById('header')
+var dashboard = document.getElementById('dashboard')
+var userInfo = document.getElementById('userInfo')
+var trends = document.getElementById('trends')
+var timeline = document.getElementById('timeline');
+var myUser = {};
 
 var promise = new Promise(function(resolve, reject){
   var xhr = new XMLHttpRequest();
@@ -19,6 +25,8 @@ var promise = new Promise(function(resolve, reject){
 });
 promise.then(function(value){
   console.log(value);
+  myUser = value;
+  showDashBoard();
 })
 
 loginButton.addEventListener('click',function(){
@@ -30,6 +38,7 @@ signUpButton.addEventListener('click', function(){
 });
 
 loginBtn.addEventListener('click', function(event){
+  $('#login').modal('toggle');
   event.preventDefault();
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '/login', true);
@@ -48,12 +57,14 @@ loginBtn.addEventListener('click', function(event){
   xhr.onload = function(){
     if (xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
-      console.log(response);
+      myUser = response;
+      showDashBoard();
     }
   }
 })
 
 signUpBtn.addEventListener('click', function(event){
+  $('#sign-up').modal('toggle');
   event.preventDefault();
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '/signup', true);
@@ -78,7 +89,57 @@ signUpBtn.addEventListener('click', function(event){
   xhr.onload = function(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
-      console.log(response);
+      myUser = response;
+      showDashBoard();
     }
   }
 })
+function showDashBoard(){
+  landingPage.className = "hidden";
+  dashboard.className = "row-fluid"
+  appendUserInfo(myUser);
+}
+
+function appendUserInfo(user){
+  var thumbnail = document.createElement('div')
+  thumbnail.className ="thumbnail"
+  var caption = document.createElement('div')
+  caption.className="caption"
+  var userName = document.createElement('h1');
+  var userHandle = document.createElement('p');
+  var tweetsBtn = document.createElement('a');
+  tweetsBtn.className = "btn btn-default"
+  var followersBtn = document.createElement('a');
+  followersBtn.className = "btn btn-default"
+  var followingBtn = document.createElement('a');
+  followingBtn.className = "btn btn-default"
+  var userNameText = document.createTextNode(user.name)
+  var userHandleText = document.createTextNode('@'+user.handle)
+  var numOfTweets = document.createTextNode(user.numberOfTweets);
+  var numOfFollowers = document.createTextNode(user.numberOfFollowers);
+  var numOfFollowing = document.createTextNode(user.numberOfFollowing);
+  var tweets = document.createElement('p');
+  var followers = document.createElement('p');
+  var following = document.createElement('p');
+  var tweetsText = document.createTextNode('Tweets')
+  var followingText = document.createTextNode('Following')
+  var followersText = document.createTextNode('Followers')
+  tweets.appendChild(tweetsText);
+  followers.appendChild(followersText);
+  following.appendChild(followingText);
+  tweetsBtn.appendChild(tweets);
+  tweetsBtn.appendChild(numOfTweets);
+  followersBtn.appendChild(followers);
+  followersBtn.appendChild(numOfFollowers);
+  followingBtn.appendChild(following);
+  followingBtn.appendChild(numOfFollowing);
+  userName.appendChild(userNameText);
+  userHandle.appendChild(userHandleText);
+  caption.appendChild(userName);
+  caption.appendChild(userHandle);
+  caption.appendChild(tweetsBtn);
+  caption.appendChild(followersBtn);
+  caption.appendChild(followingBtn);
+  thumbnail.appendChild(caption);
+  userInfo.appendChild(thumbnail);
+}

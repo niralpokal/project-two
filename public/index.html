@@ -34,7 +34,6 @@
         </div>
       </nav>
     </div>
-    <hr>
     <div class="modal fade" tabindex="-1" id="sign-up" role="dialog">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -88,6 +87,40 @@
       </div>
     </div>
   </div>
+  <div class="hidden row-fluid" id="dashboard">
+      <nav class="navbar navbar-default navbar-static-top" id="userNavbar">
+        <div class="container">
+          <div class="row-fluid">
+            <div class="btn-group btn-group-lg  pull-left" id="user-btn-group" role="group" aria-label="Toolbar with button groups">
+              <a role="button" class="btn btn-secondary" id="userHome">Home</a>
+              <a role="button" class="btn btn-secondary"id="userMoments">Moments</a>
+              <a role="button" class="btn btn-secondary" id="userNotifications">Notifications <span class="badge" id="numberofNotications"></span></a>
+              <a role="button" class="btn btn-secondary" id="userMessages">Messsages <span class="badge" id="numberOfMessages"></span></a>
+            </div>
+            <form class="form-inline pull-right" id="form1">
+                <label for="searchBar"></label>
+                <input class="form-control" id="searchBar" type="text" form="form1" placeholder="Search" value="">
+                <button class="btn btn-primary" id="tweet-button" type="click">Tweet</button>
+              </div>
+            </form>
+          </div>
+      </nav>
+      <div class="row-fluid">
+        <div class="col-md-3">
+          <div class="row-fluid" id="userInfo"></div>
+          <div class=""id="trends"></div>
+        </div>
+        <div class="col-md-6">
+          <form class="">
+            <label for="tweetBar"></label>
+            <input class="form-control" id="tweetBar" type="text" placeholder="Whats on your mind?" value="">
+          </form>
+          <div class="" id="timeline"></div>
+        </div>
+        <div class="col-md-3" id="suggestions">
+        </div>
+      </div>
+    </div>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
