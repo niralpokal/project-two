@@ -4,9 +4,22 @@ var loginButton = document.getElementById('loginButton');
 var signUpButton = document.getElementById('signUpButton')
 var signUpBtn = document.getElementById('signUpBtn');
 var loginBtn = document.getElementById('loginBtn')
+var socket = io();
 
-
-
+var promise = new Promise(function(resolve, reject){
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/home', true)
+  xhr.send();
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var response = JSON.parse(xhr.responseText);
+      resolve(response);
+    }
+  }
+});
+promise.then(function(value){
+  console.log(value);
+})
 
 loginButton.addEventListener('click',function(){
   $('#login').modal('show')
@@ -47,14 +60,12 @@ signUpBtn.addEventListener('click', function(event){
   xhr.setRequestHeader('Content-Type', 'application/json')
   var name = document.getElementById('signUpName').value;
   var handle = document.getElementById('signUpId').value;
-  var email = document.getElementById('signUpEmail').value;
   var pass1 = document.getElementById('signUpPass1').value;
   var pass2 = document.getElementById('signUpPass2').value;
   if(pass1 == pass2){
     var myData = {
       name:name,
       id:handle,
-      email:email,
       pass:pass1,
     }
     var payload = JSON.stringify(myData);
