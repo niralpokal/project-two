@@ -134,33 +134,41 @@ function makeTweet(tweet, a){
    })
 };
 
-function checkFollowingTweets(user, b){
+function findFollowingTweets(a,b){
   var tweets = []
-  for(var i = 0; i< user.length; i++){
-    var handle = user[i].handle
-    var findUsersTweets = function(db, callback, handle) {
-    var myData = {
-      handle:handle
-    }
-     var cursor = db.collection('users').find(myData);
-     cursor.each(function(err, doc) {
-        assert.equal(err, null);
-        if (doc != null) {
-          tweets.push(doc.tweets)
-        } else {
-          callback();
-      }
+  var findUsersTweets = function(db, callback) {
+    var cursor = db.collection('users').find();
+    cursor.each(function(err, doc) {
+       assert.equal(err, null);
+       if (doc != null) {
+         tweets.push(doc)
+       } else {
+         callback();
+     }
    });
-   }
-    MongoClient.connect(url, function(err,db){
-      assert.equal(null,err);
-      console.log('Finding tweets in the database');
-      findUsersTweets(db,function(){
-        db.close();
-        myEvent.emit(b, tweets)
-      }, handle)
-    })
   }
+    MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('Finding tweets in the database');
+    findUsersTweets(db,function(){
+      db.close();
+      myEvent.emit(b, tweets)
+    })
+  })
+};
+
+function checkFollowing(user, tweets){
+  var payload = []
+  for(var i = 0; i<user.length; i++){
+    var follow = user[i].handle;
+    for(var y = 0; y <tweets.length; y++){
+      if (follow == tweets[y].handle){
+      var a =  tweets.splice(y,1);
+      payload.push(a);
+      }
+    }
+  }
+  return payload;
 };
 
 function findSuggestions(a){
@@ -251,9 +259,11 @@ app.get('/home', cookieParser(), function(req,res){
 app.get('/userTimeline', cookieParser(), function(req, res) {
   for(var i= 0; i< users.length; i++){
     if(req.cookies.id == users[i].handle){
-       checkFollowingTweets(users[i].following, 'followingTweets');
+      var user = users[i].following;
+       findFollowingTweets(users[i].following, 'followingTweets');
        myEvent.on('followingTweets', function(body){
-         res.json(body);
+         var payload = checkFollowing(user,body);
+         res.json(payload);
       })
     }
   }

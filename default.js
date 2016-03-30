@@ -47,8 +47,6 @@ loginBtn.addEventListener('click', function(event){
   xhr.setRequestHeader('Content-Type', 'application/json')
   var id = document.getElementById('loginName').value;
   var pass = document.getElementById('loginPass').value;
-  console.log(id);
-  console.log(pass);
   var myData = {
     id:id,
     pass:pass
