@@ -55,27 +55,35 @@ stream.on('error', function(error) {
   });
 });*/
 
-/*io.on('connection', function(socket){
-  console.log('we are connected');
-});*/
-
 var users= [];
 var userNumber = 0;
 function User(user){
   this.name = user.name;
   this.pass = user.pass;
   this.handle = user.id;
+  this.caption = '';
   this.tweets = [];
   this.numberOfTweets = 0;
   this.followers = [];
   this.following = [];
   this.numberOfFollowers = 0;
-  this.numerOfFollowing = 0;
+  this.numberOfFollowing = 0;
   this.settingColor = 'blue';
   this.notifications = [];
   this.messages =[];
   this.numberOfNotifications = 0;
   this.numberOfMessages = 0;
+}
+function Tweet(tweet){
+  this.date = new Date(Date.now);
+  this.text = tweet.text;
+  this.handle = tweet.handle;
+  this.favs = [];
+  this.numberOfFavs = 0
+  this.retweets = [];
+  this.numberOfRetweets = 0;
+  this.tags = tweet.tag;
+  this.mentions = tweet.mentions;
 }
 
 function newUser(user, a){
@@ -91,13 +99,33 @@ function newUser(user, a){
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('I added a new user to the database');
-    newUser(db,function(){
+    insertUser(db,function(){
       db.close();
       myEvent.emit(a, neophite)
     })
   })
 };
 
+function makeTweet(tweet, a){
+  var chirp = new Tweet(tweet);
+  var handle = {
+    handle:chirp.handle
+  }
+  var myData ={
+    tweets: chirp
+  }
+  var insertTweet = function(db,callback){
+    db.collection('users').update(handle,{ $push: mydata })
+  }
+   MongoClient.connect(url, function(err,db){
+     assert.equal(null,err);
+     console.log('I added a new user to the database');
+     insertTweet(db,function(){
+       db.close();
+       myEvent.emit(a)
+     })
+   })
+}
 function checkLogin(check){
   for(var i= 0; i< users.length; i++){
     if( check.id == users[i].handle && check.pass == users[i].pass){
@@ -105,6 +133,38 @@ function checkLogin(check){
     }
   }
 };
+
+function checkFollowingTweets(user, b){
+  var tweets = []
+  console.log(user);
+  for(var i = 0; i< user.length; i++){
+    var handle = user[i].handle
+    var findUsersTweets = function(db, callback, handle) {
+    var myData = {
+      handle:handle
+    }
+    console.log(myData);
+     var cursor = db.collection('users').find(myData);
+     cursor.each(function(err, doc) {
+        assert.equal(err, null);
+        if (doc != null) {
+          console.log(doc.tweets);
+          tweets.push(doc.tweets)
+        } else {
+          callback();
+      }
+   });
+   }
+    MongoClient.connect(url, function(err,db){
+      assert.equal(null,err);
+      console.log('Finding tweets in the database');
+      findUsersTweets(db,function(){
+        db.close();
+        myEvent.emit(b, tweets)
+      }, handle)
+    })
+  }
+}
 
 app.use(express.static('./public/'));
 
@@ -120,6 +180,24 @@ app.get('/home', cookieParser(), function(req,res){
     })
   }
 })
+
+app.get('/userTimeline', cookieParser(), function(req, res) {
+  for(var i= 0; i< users.length; i++){
+    if(req.cookies.id == users[i].handle){
+       checkFollowingTweets(users[i].following, 'followingTweets');
+       myEvent.on('followingTweets', function(body){
+         res.json(body);
+      })
+    }
+  }
+});
+
+app.post('/tweet', function(req, res) {
+  makeTweet(req.body, 'tweet');
+  myEvent.on('tweet', function(){
+    res.send(req.body);
+  })
+});
 
 app.post('/signup', jsonParser, function(req,res){
   newUser(req.body, 'signup');

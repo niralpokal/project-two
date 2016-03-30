@@ -46,9 +46,10 @@
                 <label for="signUpName">Name</label>
                 <input type="text" class="form-control" id="signUpName" placeholder="Name">
               </div>
-              <div class="form-group">
-                <label for="signUpId">Handle</label>
-                <input type="text" class="form-control" id="signUpId" placeholder="@something">
+              <label for"signUpId">Handle</label>
+              <div class="input-group">
+                <span class="input-group-addon" id="sizing-addon2">@</span>
+                <input type="text" class="form-control" id="signUpId" placeholder="Something" aria-describedby="sizing-addon2">
               </div>
               <div class="form-group">
                 <label for="signUpPass1">Password</label>
@@ -72,13 +73,14 @@
         </div>
         <div class="modal-body">
           <form>
-            <div class="form-group">
-              <label for="loginName">Handle</label>
-              <input type="text" class="form-control" id="loginName" placeholder="Please enter either your handle or email">
+            <label for="loginName">Handle</label>
+            <div class="input-group">
+              <span class="input-group-addon" id="sizing-addon2">@</span>
+              <input type="text" class="form-control" id="loginName" placeholder="Please enter either your handle">
             </div>
             <div class="form-group">
               <label for="loginPass">Password</label>
-              <input type="password" class="form-control" id="loginPass" placeholder="Please enter your password">
+              <input type="password" class="form-control" id="loginPass" placeholder="Please enter your password" aria-describedby="sizing-addon2">
             </div>
             <button type="button" class="btn btn-primary" id="loginBtn">Login!!</button>
           </form>
@@ -111,17 +113,16 @@
           <div class=""id="trends"></div>
         </div>
         <div class="col-md-6">
-          <form class="">
-            <label for="tweetBar"></label>
-            <input class="form-control" id="tweetBar" type="text" placeholder="Whats on your mind?" value="">
-          </form>
+          <textarea class="form-control" rows="3" id="tweetBox"></textarea>
+          <input class="btn btn-default pull-right" type="button" id="submitTweet" value="Tweet">
           <div class="" id="timeline"></div>
         </div>
         <div class="col-md-3" id="suggestions">
         </div>
       </div>
     </div>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
   <script src="default.js"></script>

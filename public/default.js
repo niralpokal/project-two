@@ -4,12 +4,13 @@ var loginButton = document.getElementById('loginButton');
 var signUpButton = document.getElementById('signUpButton')
 var signUpBtn = document.getElementById('signUpBtn');
 var loginBtn = document.getElementById('loginBtn')
-//var socket = io();
 var landingPage = document.getElementById('header')
 var dashboard = document.getElementById('dashboard')
 var userInfo = document.getElementById('userInfo')
 var trends = document.getElementById('trends')
 var timeline = document.getElementById('timeline');
+var tweetBox = document.getElementById('tweetBox');
+var submitTweetBtn = document.getElementById('submitTweet');
 var myUser = {};
 
 var promise = new Promise(function(resolve, reject){
@@ -98,6 +99,7 @@ function showDashBoard(){
   landingPage.className = "hidden";
   dashboard.className = "row-fluid"
   appendUserInfo(myUser);
+  appendTimeline(myUser);
 }
 
 function appendUserInfo(user){
@@ -143,3 +145,17 @@ function appendUserInfo(user){
   thumbnail.appendChild(caption);
   userInfo.appendChild(thumbnail);
 }
+
+function appendTimeline(user){
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/userTimeline', true);
+  xhr.send();
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var response = JSON.parse(xhr.responseText);
+      console.log(_.sortBy(response, 'date'));
+    }
+  }
+}
+submitTweetBtn.addEventListener('click', function(){
+})
