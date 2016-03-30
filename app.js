@@ -67,7 +67,23 @@ function checkLogin(check){
     }
   }
 };
-
+function checkSuggestions(user, suggestions){
+  var name = user.handle;
+  for (var z = 0; z<suggestions.length; z++){
+    if (name == suggestions[z].handle){
+      delete suggestions[z];
+    }
+  }
+  for(var i = 0; i<user.following.length; i++){
+    var follow = user.following[i].handle;
+    for(var y = 0; y <suggestions.length; y++){
+      if (follow == suggestions[y].handle){
+        delete suggestions[y];
+      }
+    }
+  }
+  return suggestions;
+}
 function findUser(payload, b){
   var findUsers = function(db, callback) {
   var myData = {
@@ -233,12 +249,15 @@ app.post('/signup', jsonParser, function(req,res){
   })
 });
 
+
 app.get('/suggestions', cookieParser(), function(req, res) {
   for(var i= 0; i< users.length; i++){
     if(req.cookies.id == users[i].handle){
+      var user = users[i];
       findSuggestions('suggestions');
        myEvent.on('suggestions', function(body){
-         res.json(body);
+        var payload = checkSuggestions(user, body);
+        res.json(payload);
       })
     }
   }
