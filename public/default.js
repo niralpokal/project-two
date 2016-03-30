@@ -99,7 +99,7 @@ function showDashBoard(){
   landingPage.className = "hidden";
   dashboard.className = "row-fluid"
   appendUserInfo(myUser);
-  appendTimeline(myUser);
+  getTimeline();
 }
 
 function appendUserInfo(user){
@@ -146,14 +146,41 @@ function appendUserInfo(user){
   userInfo.appendChild(thumbnail);
 }
 
-function appendTimeline(user){
+function getTimeline(){
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/userTimeline', true);
   xhr.send();
   xhr.onload = function(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
-      console.log(_.sortBy(response, 'date'));
+      var followingTweets = _.sortBy(response, 'date');
+      appendTimeline(followingTweets);
+    }
+  }
+};
+function appendTimeline(tweets){
+  for(var i = 0; i<tweets.length; i++){
+    var innerTweets = tweets[i];
+    for(var z = 0; z <innerTweets.length; i++){
+      var media = document.createElement('div');
+      media.className = "media";
+      var mediaLeft = document.createElement('div');
+      mediaLeft.className = "media-left";
+      var mediaBody = document.createElement('div');
+      mediaBody.className = "media-body"
+      var h6 = document.createElement('h6');
+      var p1 = document.createElement('p');
+      var p2 = document.createElement('p');
+      var handle = document.createTextNode(innerTweets[i].handle)
+      var name  = document.createTextNode('');
+      var tweet = document.createTextNode(innerTweets[i].text)
+      p2.appendChild(tweet);
+      h6.appendChild(handle);
+      mediaBody.appendChild(h6);
+      mediaBody.appendChild(p2);
+      media.appendChild(mediaLeft);
+      media.appendChild(mediaBody);
+      timeline.appendChild(media);
     }
   }
 }
