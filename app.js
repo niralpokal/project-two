@@ -14,47 +14,6 @@ var url = 'mongodb://localhost:27017/user'
 const EventEmitter = require('events');
 const myEvent = new EventEmitter();
 
-function searchMongo(payload, b){
-  var findUsers = function(db, callback) {
-  var myData = {
-    handle:payload.id
-  }
-   var cursor = db.collection('users').find(myData);
-   cursor.each(function(err, doc) {
-      assert.equal(err, null);
-      if (doc != null) {
-        users.push(doc)
-      } else {
-        callback();
-    }
- });
- }
-  MongoClient.connect(url, function(err,db){
-    assert.equal(null,err);
-    console.log('Finding something in the database');
-    findUsers(db,function(){
-      db.close();
-      myEvent.emit(b)
-    })
-  })
-};
-
-var client = new Twitter({
-  consumer_key: process.env.TWITTER_CONSUMER_KEY,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
-});
-
-/*client.stream('statuses/filter', {track: 'javascript'}, function(stream) {
-  stream.on('data', function(tweet) {
-    console.log(tweet.text);
-});
-stream.on('error', function(error) {
-    throw error;
-  });
-});*/
-
 var users= [];
 var userNumber = 0;
 function User(user){
@@ -85,6 +44,54 @@ function Tweet(tweet){
   this.tags = tweet.tag;
   this.mentions = tweet.mentions;
 }
+
+var client = new Twitter({
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+});
+
+/*client.stream('statuses/filter', {track: 'javascript'}, function(stream) {
+  stream.on('data', function(tweet) {
+    console.log(tweet.text);
+});
+stream.on('error', function(error) {
+    throw error;
+  });
+});*/
+function checkLogin(check){
+  for(var i= 0; i< users.length; i++){
+    if( check.id == users[i].handle && check.pass == users[i].pass){
+      return users[i];
+    }
+  }
+};
+
+function findUser(payload, b){
+  var findUsers = function(db, callback) {
+  var myData = {
+    handle:payload.id
+  }
+   var cursor = db.collection('users').find(myData);
+   cursor.each(function(err, doc) {
+      assert.equal(err, null);
+      if (doc != null) {
+        users.push(doc)
+      } else {
+        callback();
+    }
+ });
+ }
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('Finding something in the database');
+    findUsers(db,function(){
+      db.close();
+      myEvent.emit(b)
+    })
+  })
+};
 
 function newUser(user, a){
  var neophite = new User(user);
@@ -126,13 +133,6 @@ function makeTweet(tweet, a){
      })
    })
 }
-function checkLogin(check){
-  for(var i= 0; i< users.length; i++){
-    if( check.id == users[i].handle && check.pass == users[i].pass){
-      return users[i];
-    }
-  }
-};
 
 function checkFollowingTweets(user, b){
   var tweets = []
@@ -166,11 +166,34 @@ function checkFollowingTweets(user, b){
   }
 }
 
+function findSuggestions(a){
+  var suggestions = [];
+  var findUsers = function(db, callback) {
+   var cursor = db.collection('users').find().limit(9);
+   cursor.each(function(err, doc) {
+      assert.equal(err, null);
+      if (doc != null) {
+        suggestions.push(doc)
+      } else {
+        callback();
+    }
+ });
+ }
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('Finding something in the database');
+    findUsers(db,function(){
+      db.close();
+      myEvent.emit(a, suggestions)
+    })
+  })
+}
+
 app.use(express.static('./public/'));
 
 app.get('/home', cookieParser(), function(req,res){
   if(req.cookies.remember == 'true'){
-    searchMongo(req.cookies, 'cookie');
+    findUser(req.cookies, 'cookie');
     myEvent.on('cookie', function(){
       for(var i= 0; i< users.length; i++){
         if( req.cookies.user == users[i]._id && req.cookies.id == users[i].handle){
@@ -210,8 +233,20 @@ app.post('/signup', jsonParser, function(req,res){
   })
 });
 
+app.get('/suggestions', cookieParser(), function(req, res) {
+  for(var i= 0; i< users.length; i++){
+    if(req.cookies.id == users[i].handle){
+      findSuggestions('suggestions');
+       myEvent.on('suggestions', function(body){
+         res.json(body);
+      })
+    }
+  }
+});
+
+
 app.post('/login', jsonParser, function(req, res) {
-  searchMongo(req.body, 'send')
+  findUser(req.body, 'send')
   myEvent.on('send', function(){
     var result = checkLogin(req.body);
     res.cookie('user', result._id);
