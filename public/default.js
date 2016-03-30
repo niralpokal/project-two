@@ -100,6 +100,7 @@ function showDashBoard(){
   dashboard.className = "row-fluid"
   appendUserInfo(myUser);
   getTimeline();
+  getSuggestions();
 }
 
 function appendUserInfo(user){
@@ -161,6 +162,7 @@ function getTimeline(){
 function appendTimeline(tweets){
   for(var i = 0; i<tweets.length; i++){
     var innerTweets = tweets[i];
+    console.log(innerTweets.length);
     for(var z = 0; z <innerTweets.length; i++){
       var media = document.createElement('div');
       media.className = "media";
@@ -168,21 +170,37 @@ function appendTimeline(tweets){
       mediaLeft.className = "media-left";
       var mediaBody = document.createElement('div');
       mediaBody.className = "media-body"
-      var h6 = document.createElement('h6');
+      var h5 = document.createElement('h5');
       var p1 = document.createElement('p');
       var p2 = document.createElement('p');
-      var handle = document.createTextNode(innerTweets[i].handle)
+      var handle = document.createTextNode('@' + innerTweets[i].handle)
       var name  = document.createTextNode('');
       var tweet = document.createTextNode(innerTweets[i].text)
       p2.appendChild(tweet);
-      h6.appendChild(handle);
-      mediaBody.appendChild(h6);
+      h5.appendChild(handle);
+      mediaBody.appendChild(h5);
       mediaBody.appendChild(p2);
       media.appendChild(mediaLeft);
       media.appendChild(mediaBody);
       timeline.appendChild(media);
     }
   }
+}
+function getSuggestions(){
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/suggestions', true);
+  xhr.send();
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var response = JSON.parse(xhr.responseText);
+      console.log(response);
+      //appendSuggestions(response);
+    }
+  }
+}
+
+function appendSuggestions(users){
+
 }
 submitTweetBtn.addEventListener('click', function(){
 })

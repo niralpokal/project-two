@@ -71,14 +71,14 @@ function checkSuggestions(user, suggestions){
   var name = user.handle;
   for (var z = 0; z<suggestions.length; z++){
     if (name == suggestions[z].handle){
-      delete suggestions[z];
+      suggestions.splice(z,1);
     }
   }
   for(var i = 0; i<user.following.length; i++){
     var follow = user.following[i].handle;
     for(var y = 0; y <suggestions.length; y++){
       if (follow == suggestions[y].handle){
-        delete suggestions[y];
+        suggestions.splice(y,1);
       }
     }
   }
@@ -152,19 +152,16 @@ function makeTweet(tweet, a){
 
 function checkFollowingTweets(user, b){
   var tweets = []
-  console.log(user);
   for(var i = 0; i< user.length; i++){
     var handle = user[i].handle
     var findUsersTweets = function(db, callback, handle) {
     var myData = {
       handle:handle
     }
-    console.log(myData);
      var cursor = db.collection('users').find(myData);
      cursor.each(function(err, doc) {
         assert.equal(err, null);
         if (doc != null) {
-          console.log(doc.tweets);
           tweets.push(doc.tweets)
         } else {
           callback();
