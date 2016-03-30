@@ -160,8 +160,7 @@ function getUserTimeline(){
 };
 function appendUserTimeline(tweets){
   for(var i = 0; i<tweets.length; i++){
-    var innerTweets = tweets[0];
-    console.log(innerTweets.length);
+    var innerTweets = tweets[i][0].tweets;
     for(var z = 0; z <innerTweets.length; z++){
       var media = document.createElement('div');
       media.className = "media";

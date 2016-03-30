@@ -47,8 +47,6 @@ loginBtn.addEventListener('click', function(event){
   xhr.setRequestHeader('Content-Type', 'application/json')
   var id = document.getElementById('loginName').value;
   var pass = document.getElementById('loginPass').value;
-  console.log(id);
-  console.log(pass);
   var myData = {
     id:id,
     pass:pass
@@ -162,8 +160,7 @@ function getUserTimeline(){
 };
 function appendUserTimeline(tweets){
   for(var i = 0; i<tweets.length; i++){
-    var innerTweets = tweets[0];
-    console.log(innerTweets.length);
+    var innerTweets = tweets[i][0].tweets;
     for(var z = 0; z <innerTweets.length; z++){
       var media = document.createElement('div');
       media.className = "media";
