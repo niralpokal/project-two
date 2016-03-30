@@ -11,6 +11,7 @@ var trends = document.getElementById('trends')
 var timeline = document.getElementById('timeline');
 var tweetBox = document.getElementById('tweetBox');
 var submitTweetBtn = document.getElementById('submitTweet');
+var suggestions = document.getElementById('suggestions')
 var myUser = {};
 
 var promise = new Promise(function(resolve, reject){
@@ -161,9 +162,9 @@ function getTimeline(){
 };
 function appendTimeline(tweets){
   for(var i = 0; i<tweets.length; i++){
-    var innerTweets = tweets[i];
+    var innerTweets = tweets[0];
     console.log(innerTweets.length);
-    for(var z = 0; z <innerTweets.length; i++){
+    for(var z = 0; z <innerTweets.length; z++){
       var media = document.createElement('div');
       media.className = "media";
       var mediaLeft = document.createElement('div');
@@ -173,9 +174,9 @@ function appendTimeline(tweets){
       var h5 = document.createElement('h5');
       var p1 = document.createElement('p');
       var p2 = document.createElement('p');
-      var handle = document.createTextNode('@' + innerTweets[i].handle)
+      var handle = document.createTextNode('@' + innerTweets[z].handle)
       var name  = document.createTextNode('');
-      var tweet = document.createTextNode(innerTweets[i].text)
+      var tweet = document.createTextNode(innerTweets[z].text)
       p2.appendChild(tweet);
       h5.appendChild(handle);
       mediaBody.appendChild(h5);
@@ -194,13 +195,33 @@ function getSuggestions(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
       console.log(response);
-      //appendSuggestions(response);
+      appendSuggestions(response);
     }
   }
 }
 
 function appendSuggestions(users){
-
+  for(var i = 0; i<users.length; i++){
+    var media = document.createElement('div');
+    media.className = "media";
+    var mediaLeft = document.createElement('div');
+    mediaLeft.className = "media-left";
+    var mediaBody = document.createElement('div');
+    mediaBody.className = "media-body"
+    var h5 = document.createElement('h5');
+    var p1 = document.createElement('p');
+    var p2 = document.createElement('p');
+    var handle = document.createTextNode('@' + users[i].handle)
+  //  var name  = document.createTextNode('');
+    //var tweet = document.createTextNode(innerTweets[i].text)
+    //p2.appendChild(button);
+    h5.appendChild(handle);
+    mediaBody.appendChild(h5);
+    mediaBody.appendChild(p2);
+    media.appendChild(mediaLeft);
+    media.appendChild(mediaBody);
+    suggestions.appendChild(media);
+  }
 }
 submitTweetBtn.addEventListener('click', function(){
 })
