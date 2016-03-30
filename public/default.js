@@ -100,7 +100,7 @@ function showDashBoard(){
   landingPage.className = "hidden";
   dashboard.className = "row-fluid"
   appendUserInfo(myUser);
-  getTimeline();
+  getUserTimeline();
   getSuggestions();
 }
 
@@ -148,7 +148,7 @@ function appendUserInfo(user){
   userInfo.appendChild(thumbnail);
 }
 
-function getTimeline(){
+function getUserTimeline(){
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/userTimeline', true);
   xhr.send();
@@ -156,11 +156,11 @@ function getTimeline(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
       var followingTweets = _.sortBy(response, 'date');
-      appendTimeline(followingTweets);
+      appendUserTimeline(followingTweets);
     }
   }
 };
-function appendTimeline(tweets){
+function appendUserTimeline(tweets){
   for(var i = 0; i<tweets.length; i++){
     var innerTweets = tweets[0];
     console.log(innerTweets.length);
@@ -187,6 +187,7 @@ function appendTimeline(tweets){
     }
   }
 }
+
 function getSuggestions(){
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/suggestions', true);
@@ -208,13 +209,19 @@ function appendSuggestions(users){
     mediaLeft.className = "media-left";
     var mediaBody = document.createElement('div');
     mediaBody.className = "media-body"
+    var button = document.createElement('button');
+    button.className = "btn btn-default"
+    button.setAttribute('data-id', 'follow');
+    var buttonText = document.createTextNode('Follow')
     var h5 = document.createElement('h5');
+    h5.setAttribute('data-id', users[i].handle)
     var p1 = document.createElement('p');
     var p2 = document.createElement('p');
     var handle = document.createTextNode('@' + users[i].handle)
   //  var name  = document.createTextNode('');
     //var tweet = document.createTextNode(innerTweets[i].text)
-    //p2.appendChild(button);
+    button.appendChild(buttonText);
+    p2.appendChild(button);
     h5.appendChild(handle);
     mediaBody.appendChild(h5);
     mediaBody.appendChild(p2);
@@ -223,5 +230,37 @@ function appendSuggestions(users){
     suggestions.appendChild(media);
   }
 }
+function addFollower(target){
+  var parent = target.parentNode;
+  var theParent = parent.parentNode.getElementsByTagName('h5')[0];
+  var toFollow = theParent.dataset.id
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/addFollower', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  var myData = {
+    user:myUser.handle,
+    follow:toFollow
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var response = JSON.parse(xhr.responseText);
+      console.log(response);
+      //appendSuggestions(response);
+    }
+  }
+}
+function myTarget(event){
+  var ev = event;
+  var target = ev.target;
+  console.log(target);
+  var theTarget = target.dataset.id;
+  if (theTarget === 'follow'){
+    addFollower(target);
+  }
+}
+
+document.body.addEventListener('click', myTarget)
 submitTweetBtn.addEventListener('click', function(){
 })

@@ -67,23 +67,7 @@ function checkLogin(check){
     }
   }
 };
-function checkSuggestions(user, suggestions){
-  var name = user.handle;
-  for (var z = 0; z<suggestions.length; z++){
-    if (name == suggestions[z].handle){
-      suggestions.splice(z,1);
-    }
-  }
-  for(var i = 0; i<user.following.length; i++){
-    var follow = user.following[i].handle;
-    for(var y = 0; y <suggestions.length; y++){
-      if (follow == suggestions[y].handle){
-        suggestions.splice(y,1);
-      }
-    }
-  }
-  return suggestions;
-}
+
 function findUser(payload, b){
   var findUsers = function(db, callback) {
   var myData = {
@@ -148,7 +132,7 @@ function makeTweet(tweet, a){
        myEvent.emit(a)
      })
    })
-}
+};
 
 function checkFollowingTweets(user, b){
   var tweets = []
@@ -177,7 +161,7 @@ function checkFollowingTweets(user, b){
       }, handle)
     })
   }
-}
+};
 
 function findSuggestions(a){
   var suggestions = [];
@@ -200,6 +184,53 @@ function findSuggestions(a){
       myEvent.emit(a, suggestions)
     })
   })
+};
+
+function checkSuggestions(user, suggestions){
+  var name = user.handle;
+  for (var z = 0; z<suggestions.length; z++){
+    if (name == suggestions[z].handle){
+      suggestions.splice(z,1);
+    }
+  }
+  for(var i = 0; i<user.following.length; i++){
+    var follow = user.following[i].handle;
+    for(var y = 0; y <suggestions.length; y++){
+      if (follow == suggestions[y].handle){
+        suggestions.splice(y,1);
+      }
+    }
+  }
+  return suggestions;
+};
+
+function addFollower(user, a){
+  var handle = {
+    handle:user.user
+  }
+  var handle2 = {
+    handle:user.follow
+  }
+  var myData = {
+    following:handle2
+  }
+  var myData2 = {
+    followers:handle
+  }
+  var updateFollower = function(db,callback){
+    db.collection('users').update(handle,{ $push: myData })
+    db.collection('users').update(handle,{$inc:{"numberOfFollowing" : 1}})
+    db.collection('users').update(handle2,{ $push: myData2 })
+    db.collection('users').update(handle2,{ $inc: {"numberOfFollowers": 1}} )
+  }
+   MongoClient.connect(url, function(err,db){
+     assert.equal(null,err);
+     console.log('I added a new user to the database');
+     updateFollower(db,function(){
+       db.close();
+       myEvent.emit(a)
+     })
+   })
 }
 
 app.use(express.static('./public/'));
@@ -259,7 +290,13 @@ app.get('/suggestions', cookieParser(), function(req, res) {
     }
   }
 });
-
+app.post('/addFollower', jsonParser, function(req, res) {
+  console.log(req.body);
+  addFollower(req.body, 'addFollower');
+  myEvent.on('addFollower', function(){
+    res.send();
+  })
+});
 
 app.post('/login', jsonParser, function(req, res) {
   findUser(req.body, 'send')
