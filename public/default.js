@@ -11,7 +11,8 @@ var trends = document.getElementById('trends')
 var timeline = document.getElementById('timeline');
 var tweetBox = document.getElementById('tweetBox');
 var submitTweetBtn = document.getElementById('submitTweet');
-var suggestions = document.getElementById('suggestions')
+var suggestions = document.getElementById('suggestions');
+var socket = io();
 var myUser = {};
 
 var promise = new Promise(function(resolve, reject){
@@ -26,8 +27,12 @@ var promise = new Promise(function(resolve, reject){
   }
 });
 promise.then(function(value){
-  console.log(value);
   myUser = value;
+  showDashBoard();
+})
+
+socket.on('goDash',function(response){
+  myUser = response;
   showDashBoard();
 })
 
@@ -42,33 +47,35 @@ signUpButton.addEventListener('click', function(){
 loginBtn.addEventListener('click', function(event){
   $('#login').modal('toggle');
   event.preventDefault();
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', '/login', true);
-  xhr.setRequestHeader('Content-Type', 'application/json')
+  //var xhr = new XMLHttpRequest();
+  //xhr.open('POST', '/login', true);
+  //xhr.setRequestHeader('Content-Type', 'application/json')
   var id = document.getElementById('loginName').value;
   var pass = document.getElementById('loginPass').value;
   var myData = {
     id:id,
     pass:pass
   }
-  var payload = JSON.stringify(myData);
-  console.log(payload);
-  xhr.send(payload);
-  xhr.onload = function(){
-    if (xhr.status === 200){
-      var response = JSON.parse(xhr.responseText);
-      myUser = response;
-      showDashBoard();
-    }
-  }
+  socket.emit('login', myData)
+
+  //var payload = JSON.stringify(myData);
+  //console.log(payload);
+  //xhr.send(payload);
+  //xhr.onload = function(){
+  //  if (xhr.status === 200){
+  //    var response = JSON.parse(xhr.responseText);
+  //    myUser = response;
+  //    showDashBoard();
+  //  }
+//  }
 })
 
 signUpBtn.addEventListener('click', function(event){
   $('#sign-up').modal('toggle');
   event.preventDefault();
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', '/signup', true);
-  xhr.setRequestHeader('Content-Type', 'application/json')
+  //var xhr = new XMLHttpRequest();
+  //xhr.open('POST', '/signup', true);
+  //xhr.setRequestHeader('Content-Type', 'application/json')
   var name = document.getElementById('signUpName').value;
   var handle = document.getElementById('signUpId').value;
   var pass1 = document.getElementById('signUpPass1').value;
@@ -79,21 +86,23 @@ signUpBtn.addEventListener('click', function(event){
       id:handle,
       pass:pass1,
     }
-    var payload = JSON.stringify(myData);
-    xhr.send(payload);
+    socket.emit('signup', myData);
+  //  var payload = JSON.stringify(myData);
+  //  xhr.send(payload);
   }else{
     console.log('error');
     pass1.className = 'form-control primary'
     pass2.className = 'form-control primary'
   }
-  xhr.onload = function(){
+  /*xhr.onload = function(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
       myUser = response;
       showDashBoard();
     }
-  }
+  }*/
 })
+
 function showDashBoard(){
   landingPage.className = "hidden";
   dashboard.className = "row-fluid"
@@ -147,7 +156,15 @@ function appendUserInfo(user){
 }
 
 function getUserTimeline(){
-  var xhr = new XMLHttpRequest();
+  var myData = {
+    handle:myUser.handle,
+    following:myUser.following
+  }
+  socket.emit('userTimeline', myData);
+  socket.on('sendUserTimeline', function(body){
+    appendUserTimeline(body);
+  })
+/*  var xhr = new XMLHttpRequest();
   xhr.open('GET', '/userTimeline', true);
   xhr.send();
   xhr.onload = function(){
@@ -156,7 +173,7 @@ function getUserTimeline(){
       var followingTweets = _.sortBy(response, 'date');
       appendUserTimeline(followingTweets);
     }
-  }
+  }*/
 };
 function appendUserTimeline(tweets){
   for(var i = 0; i<tweets.length; i++){
@@ -186,7 +203,15 @@ function appendUserTimeline(tweets){
 }
 
 function getSuggestions(){
-  var xhr = new XMLHttpRequest();
+  var myData = {
+    handle:myUser.handle,
+    following:myUser.following
+  }
+  socket.emit('suggestions', myData);
+  socket.on('sendSuggestions',function(body){
+    appendSuggestions(body);
+  })
+/*  var xhr = new XMLHttpRequest();
   xhr.open('GET', '/suggestions', true);
   xhr.send();
   xhr.onload = function(){
@@ -195,7 +220,7 @@ function getSuggestions(){
       console.log(response);
       appendSuggestions(response);
     }
-  }
+  }*/
 }
 
 function appendSuggestions(users){
@@ -231,22 +256,26 @@ function addFollower(target){
   var parent = target.parentNode;
   var theParent = parent.parentNode.getElementsByTagName('h5')[0];
   var toFollow = theParent.dataset.id
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', '/addFollower', true);
-  xhr.setRequestHeader('Content-Type', 'application/json')
+  //var xhr = new XMLHttpRequest();
+  //xhr.open('POST', '/addFollower', true);
+  //xhr.setRequestHeader('Content-Type', 'application/json')
   var myData = {
     user:myUser.handle,
     follow:toFollow
   }
-  var payload = JSON.stringify(myData);
-  xhr.send(payload);
-  xhr.onload = function(){
+  socket.emit('addFollower', myData);
+  socket.on('sendNewFollower', function(){
+    updateTimeline();
+  })
+  //var payload = JSON.stringify(myData);
+//  xhr.send(payload);
+/*  xhr.onload = function(){
     if(xhr.status === 200){
-      var response = JSON.parse(xhr.responseText);
-      console.log(response);
-      //appendSuggestions(response);
+      console.log('hello');
+      //var response = JSON.parse(xhr.responseText);
+      updateTimeline();
     }
-  }
+  }*/
 }
 function myTarget(event){
   var ev = event;
@@ -257,7 +286,31 @@ function myTarget(event){
     addFollower(target);
   }
 }
-
+function updateTimeline(body){
+  removeTimeline();
+  removeUserInfo();
+  removeSuggestions();
+  showDashBoard();
+}
+function removeTimeline(){
+  var element = timeline;
+  console.log('doing something');
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+}
+function removeUserInfo(){
+  var element = userInfo;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+}
+function removeSuggestions(){
+  var element = suggestions;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+}
 document.body.addEventListener('click', myTarget)
 submitTweetBtn.addEventListener('click', function(){
 })

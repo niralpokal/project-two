@@ -34,6 +34,7 @@ function User(user){
   this.numberOfMessages = 0;
 }
 function Tweet(tweet){
+  this.name = tweet.name
   this.date = new Date(Date.now);
   this.text = tweet.text;
   this.handle = tweet.handle;
@@ -225,19 +226,16 @@ function addFollower(user, a){
   var myData2 = {
     followers:handle
   }
-  var updateFollower = function(db,callback){
-    db.collection('users').update(handle,{ $push: myData })
-    db.collection('users').update(handle,{$inc:{"numberOfFollowing" : 1}})
-    db.collection('users').update(handle2,{ $push: myData2 })
-    db.collection('users').update(handle2,{ $inc: {"numberOfFollowers": 1}} )
-  }
    MongoClient.connect(url, function(err,db){
      assert.equal(null,err);
-     console.log('I added a new user to the database');
-     updateFollower(db,function(){
-       db.close();
-       myEvent.emit(a)
-     })
+     console.log('I am updating followers database');
+     var bulk = db.collection('users').initializeOrderedBulkOp();
+     bulk.find(handle).update({ $push: myData });
+     bulk.find(handle).update({$inc:{"numberOfFollowing" : 1}});
+     bulk.find(handle2).update({ $push: myData2 });
+     bulk.find('handle2').update({ $inc: {"numberOfFollowers": 1}});
+    bulk.execute();
+    myEvent.emit(a);
    })
 }
 
@@ -250,13 +248,16 @@ app.get('/home', cookieParser(), function(req,res){
       for(var i= 0; i< users.length; i++){
         if( req.cookies.user == users[i]._id && req.cookies.id == users[i].handle){
            res.json(users[i]);
+           res.end();
         }
       }
     })
+  } else{
+    console.log('no cookies');
   }
 })
 
-app.get('/userTimeline', cookieParser(), function(req, res) {
+/*app.get('/userTimeline', cookieParser(), function(req, res) {
   for(var i= 0; i< users.length; i++){
     if(req.cookies.id == users[i].handle){
       var user = users[i].following;
@@ -264,19 +265,21 @@ app.get('/userTimeline', cookieParser(), function(req, res) {
        myEvent.on('followingTweets', function(body){
          var payload = checkFollowing(user,body);
          res.json(payload);
+         res.end()
       })
     }
   }
-});
+});*/
 
-app.post('/tweet', function(req, res) {
+app.post('/tweet', jsonParser,function(req, res) {
   makeTweet(req.body, 'tweet');
   myEvent.on('tweet', function(){
     res.send(req.body);
+    res.end()
   })
 });
 
-app.post('/signup', jsonParser, function(req,res){
+/*app.post('/signup', jsonParser, function(req,res){
   newUser(req.body, 'signup');
   myEvent.on('signup', function(result){
     res.cookie('user', result._id);
@@ -285,10 +288,10 @@ app.post('/signup', jsonParser, function(req,res){
     res.json(result);
     console.log('We have a new user!' + ' Total number of users: ' + userNumber );
   })
-});
+});*/
 
 
-app.get('/suggestions', cookieParser(), function(req, res) {
+/*app.get('/suggestions', cookieParser(), function(req, res) {
   for(var i= 0; i< users.length; i++){
     if(req.cookies.id == users[i].handle){
       var user = users[i];
@@ -296,19 +299,71 @@ app.get('/suggestions', cookieParser(), function(req, res) {
        myEvent.on('suggestions', function(body){
         var payload = checkSuggestions(user, body);
         res.json(payload);
+        res.end()
       })
     }
   }
-});
+});*/
 app.post('/addFollower', jsonParser, function(req, res) {
   console.log(req.body);
   addFollower(req.body, 'addFollower');
   myEvent.on('addFollower', function(){
-    res.send();
+    console.log('hello');
+    res.sendStatus(200);
+    res.end()
   })
 });
 
-app.post('/login', jsonParser, function(req, res) {
+io.on('connection', function(socket){
+  socket.on('login', function(body){
+    findUser(body, 'send');
+    myEvent.on('send', function(){
+      var result = checkLogin(body);
+      socket.emit('goDash', result);
+    })
+  })
+  socket.on('signup', function(body){
+    newUser(body, 'signup');
+    myEvent.on('signup', function(result){
+      socket.emit('goDash', result)
+    })
+  })
+  socket.on('userTimeline', function(body){
+    for(var i= 0; i< users.length; i++){
+      if(body.handle == users[i].handle){
+        var user = users[i].following;
+         findFollowingTweets(users[i].following, 'followingTweets');
+         myEvent.on('followingTweets', function(a){
+           var payload = checkFollowing(user,a);
+           socket.emit('sendUserTimeline', payload)
+        })
+      }
+    }
+  })
+  socket.on('suggestions', function(body){
+    for(var i= 0; i< users.length; i++){
+      if(body.handle == users[i].handle){
+        var user = users[i];
+        findSuggestions('suggestions');
+         myEvent.on('suggestions', function(a){
+          var payload = checkSuggestions(user, a);
+          socket.emit('sendSuggestions', payload)
+        })
+      }
+    }
+  })
+  socket.on('addFollower', function(body){
+    users = [];
+    addFollower(body, 'addFollower');
+    myEvent.on('addFollower', function(){
+      //console.log('hello');
+      //res.sendStatus(200);
+      //res.end()
+      socket.emit('sendNewFollower');
+    })
+  })
+})
+/*app.post('/login', jsonParser, function(req, res) {
   findUser(req.body, 'send')
   myEvent.on('send', function(){
     var result = checkLogin(req.body);
@@ -316,8 +371,9 @@ app.post('/login', jsonParser, function(req, res) {
     res.cookie('id', result.handle);
     res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
     res.json(result);
+    res.end()
     console.log("I sent settings for: " + req.body.id);
   })
-});
+});*/
 
 server.listen(3000);
