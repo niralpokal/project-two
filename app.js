@@ -15,9 +15,10 @@ const EventEmitter = require('events');
 const myEvent = new EventEmitter();
 
 var users= [];
+var globalUsers =[]
 var tweets= [];
-
 var userNumber = 0;
+
 function User(user){
   this.name = user.name;
   this.pass = user.pass;
@@ -72,6 +73,7 @@ function checkLogin(check){
 };
 
 function findUser(payload, b){
+  var payload = payload;
   var findUsers = function(db, callback) {
   var myData = {
     handle:payload.id
@@ -88,7 +90,7 @@ function findUser(payload, b){
  }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('Finding something in the database');
+    console.log('finding a user');
     findUsers(db,function(){
       db.close();
       myEvent.emit(b)
@@ -97,9 +99,10 @@ function findUser(payload, b){
 };
 
 function findUserUpdate(payload, b){
+  var payload = payload;
   var findUsers = function(db, callback) {
   var myData = {
-    handle:payload.handle
+    handle:payload.user
   }
    var cursor = db.collection('users').find(myData);
    cursor.each(function(err, doc) {
@@ -113,7 +116,7 @@ function findUserUpdate(payload, b){
  }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('Finding something in the database');
+    console.log('finding updated user info');
     findUsers(db,function(){
       db.close();
       myEvent.emit(b)
@@ -163,7 +166,6 @@ function makeTweet(tweet, a){
 };
 
 function findTweets(b){
-  tweets = [];
   var findTweets = function(db, callback) {
     var cursor = db.collection('tweets').find();
     cursor.each(function(err, doc) {
@@ -185,13 +187,53 @@ function findTweets(b){
   })
 };
 
+function updateFindTweets(a){
+  var updateTweets = []
+  var upTweets = function(db, callback) {
+    var cursor = db.collection('tweets').find();
+    cursor.each(function(err, doc) {
+       assert.equal(err, null);
+       if (doc != null) {
+         updateTweets.push(doc)
+       } else {
+         callback();
+     }
+   });
+  }
+    MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('Finding updated tweets in the database');
+    upTweets(db,function(){
+      db.close();
+      myEvent.emit(a, updateTweets)
+    })
+  })
+};
+
+
 function checkFollowingTweets(user){
   var payload = []
+  var user = user;
   for(var i = 0; i<user.length; i++){
     var follow = user[i].handle;
     for(var y = 0; y <tweets.length; y++){
       if (follow == tweets[y].handle){
       var a = tweets[y];
+      payload.push(a);
+      }
+    }
+  }
+  return payload;
+};
+
+function updateFollowingTweets(user, something){
+  var payload = []
+  var something = something;
+  for(var i = 0; i<user.length; i++){
+    var follow = user[i].handle;
+    for(var y = 0; y <something.length; y++){
+      if (follow == something[y].handle){
+      var a = something[y];
       payload.push(a);
       }
     }
@@ -214,7 +256,7 @@ function findSuggestions(a){
  }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('Finding something in the database');
+    console.log('Finding suggestions');
     findUsers(db,function(){
       db.close();
       myEvent.emit(a, suggestions)
@@ -223,6 +265,7 @@ function findSuggestions(a){
 };
 
 function checkSuggestions(user, suggestions){
+  var suggestions = suggestions;
   var name = user.handle;
   for (var z = 0; z<suggestions.length; z++){
     if (name == suggestions[z].handle){
@@ -255,8 +298,8 @@ function addFollower(user, a){
   }
    MongoClient.connect(url, function(err,db){
      assert.equal(null,err);
-     console.log('I am updating followers database');
-     var bulk = db.collection('users').initializeOrderedBulkOp();
+     console.log('I am updating followers');
+     var bulk = db.collection('users').initializeUnorderedBulkOp();
      bulk.find(handle).update({ $push: myData });
      bulk.find(handle).update({$inc:{"numberOfFollowing" : 1}});
      bulk.find(handle2).update({ $push: myData2 });
@@ -343,7 +386,7 @@ app.post('/tweet', jsonParser,function(req, res) {
 
 io.on('connection', function(socket){
   socket.on('login', function(body){
-    users =[]
+    users = []
     findUser(body, 'send');
     myEvent.on('send', function(){
       var result = checkLogin(body);
@@ -351,8 +394,8 @@ io.on('connection', function(socket){
     })
   })
   socket.on('signup', function(body){
-    newUser(body, 'signup');
-    myEvent.on('signup', function(result){
+    newUser(body, 'newsignup');
+    myEvent.on('snewignup', function(result){
       socket.emit('goDash', result)
     })
   })
@@ -360,6 +403,7 @@ io.on('connection', function(socket){
     for(var i= 0; i< users.length; i++){
       if(body.handle == users[i].handle){
         var user = users[i].following;
+        tweets = [];
          findTweets('followingTweets');
          myEvent.on('followingTweets', function(a){
            var payload = checkFollowingTweets(user,a);
@@ -372,8 +416,8 @@ io.on('connection', function(socket){
     for(var i= 0; i< users.length; i++){
       if(body.handle == users[i].handle){
         var user = users[i];
-        findSuggestions('suggestions');
-         myEvent.on('suggestions', function(a){
+        findSuggestions('evsuggestions');
+         myEvent.on('evsuggestions', function(a){
           var payload = checkSuggestions(user, a);
           socket.emit('sendSuggestions', payload)
         })
@@ -381,18 +425,35 @@ io.on('connection', function(socket){
     }
   })
   socket.on('addFollower', function(body){
-    users = [];
-    addFollower(body, 'addFollower');
-    myEvent.on('addFollower', function(){
-    //  findUserUpdate(body, 'updateUser')
+    var user = body;
+    addFollower(body, 'evaddFollower');
+    myEvent.on('evaddFollower', function(){
+      users = [];
+    findUserUpdate(user, 'updateUser')
       myEvent.on('updateUser', function(){
         for (var i = 0; i<users.length; i++){
-          if(body.handle == users[i].handle){
+          if(user.user == users[i].handle){
             var payload = users[i];
-            socket.emit('sendNewFollower', payload);
+            socket.emit('sendNewInfo', payload);
           }
         }
       })
+    })
+  })
+  socket.on('updateTimeline', function(body){
+    var user = body.following;
+    updateFindTweets('updateTweets');
+    myEvent.on('updateTweets', function(something){
+      var payload = updateFollowingTweets(user,something);
+      socket.emit('sendUpdateTweets', payload)
+    })
+  })
+  socket.on('updateSuggestions', function(body){
+    var user = body;
+    findSuggestions('newSuggestions');
+    myEvent.on('newSuggestions', function(something){
+      var payload = checkSuggestions(user,something);
+      socket.emit('sendNewSuggestions', payload)
     })
   })
 })

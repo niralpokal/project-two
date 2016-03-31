@@ -162,7 +162,6 @@ function getUserTimeline(){
   }
   socket.emit('userTimeline', myData);
   socket.on('sendUserTimeline', function(body){
-    console.log(body);
     appendUserTimeline(body);
   })
 /*  var xhr = new XMLHttpRequest();
@@ -179,7 +178,6 @@ function getUserTimeline(){
 function appendUserTimeline(body){
   for(var i = 0; i<body.length; i++){
     var innerTweets = body[i].tweets;
-    console.log(innerTweets);
     for(var z = 0; z <innerTweets.length; z++){
       var media = document.createElement('div');
       media.className = "media";
@@ -226,6 +224,7 @@ function getSuggestions(){
 }
 
 function appendSuggestions(users){
+  console.log(users);
   for(var i = 0; i<users.length; i++){
     var media = document.createElement('div');
     media.className = "media";
@@ -267,9 +266,9 @@ function addFollower(target){
   }
   socket.emit('addFollower', myData);
 
-  socket.on('sendNewFollower', function(body){
-    myUser = body
-    updateTimeline();
+  socket.on('sendNewInfo', function(body){
+    myUser = body;
+    updateTimeline(body);
   })
   //var payload = JSON.stringify(myData);
 //  xhr.send(payload);
@@ -294,11 +293,27 @@ function updateTimeline(body){
   removeTimeline();
   removeUserInfo();
   removeSuggestions();
+  appendUserInfo(body);
+  getUpdateTimeline(body);
   //showDashBoard();
 }
+function getUpdateTimeline(body){
+  myData = {
+    handle:body.handle,
+    following:body.following
+  }
+  socket.emit('updateTimeline', myData)
+  socket.emit('updateSuggestions', myData)
+  socket.once('sendUpdateTweets', function(tweets){
+    appendUserTimeline(tweets);
+  })
+  socket.once('sendNewSuggestions', function(suggestions){
+    appendSuggestions(suggestions);
+  })
+}
+
 function removeTimeline(){
   var element = timeline;
-  console.log('doing something');
   while(element.firstChild){
     element.removeChild(element.firstChild);
   }
