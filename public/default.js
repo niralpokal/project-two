@@ -162,6 +162,7 @@ function getUserTimeline(){
   }
   socket.emit('userTimeline', myData);
   socket.on('sendUserTimeline', function(body){
+    console.log(body);
     appendUserTimeline(body);
   })
 /*  var xhr = new XMLHttpRequest();
@@ -175,9 +176,10 @@ function getUserTimeline(){
     }
   }*/
 };
-function appendUserTimeline(tweets){
-  for(var i = 0; i<tweets.length; i++){
-    var innerTweets = tweets[i][0].tweets;
+function appendUserTimeline(body){
+  for(var i = 0; i<body.length; i++){
+    var innerTweets = body[i].tweets;
+    console.log(innerTweets);
     for(var z = 0; z <innerTweets.length; z++){
       var media = document.createElement('div');
       media.className = "media";
@@ -264,7 +266,9 @@ function addFollower(target){
     follow:toFollow
   }
   socket.emit('addFollower', myData);
-  socket.on('sendNewFollower', function(){
+
+  socket.on('sendNewFollower', function(body){
+    myUser = body
     updateTimeline();
   })
   //var payload = JSON.stringify(myData);
@@ -290,7 +294,7 @@ function updateTimeline(body){
   removeTimeline();
   removeUserInfo();
   removeSuggestions();
-  showDashBoard();
+  //showDashBoard();
 }
 function removeTimeline(){
   var element = timeline;
