@@ -16,6 +16,7 @@ const myEvent = new EventEmitter();
 
 var users= [];
 var globalUsers =[]
+var suggestions = [];
 var tweets= [];
 var userNumber = 0;
 
@@ -57,12 +58,12 @@ var client = new Twitter({
 });
 
 /*client.stream('statuses/filter', {track: 'javascript'}, function(stream) {
-  stream.on('data', function(tweet) {
-    console.log(tweet.text);
+stream.on('data', function(tweet) {
+console.log(tweet.text);
 });
 stream.on('error', function(error) {
-    throw error;
-  });
+throw error;
+});
 });*/
 function checkLogin(check){
   for(var i= 0; i< users.length; i++){
@@ -75,19 +76,19 @@ function checkLogin(check){
 function findUser(payload, b){
   var payload = payload;
   var findUsers = function(db, callback) {
-  var myData = {
-    handle:payload.id
-  }
-   var cursor = db.collection('users').find(myData);
-   cursor.each(function(err, doc) {
+    var myData = {
+      handle:payload.id
+    }
+    var cursor = db.collection('users').find(myData);
+    cursor.each(function(err, doc) {
       assert.equal(err, null);
       if (doc != null) {
         users.push(doc)
       } else {
         callback();
-    }
- });
- }
+      }
+    });
+  }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('finding a user');
@@ -98,22 +99,22 @@ function findUser(payload, b){
   })
 };
 
-function findUserUpdate(payload, b){
+function findUpdateUser(payload, b){
   var payload = payload;
   var findUsers = function(db, callback) {
-  var myData = {
-    handle:payload.user
-  }
-   var cursor = db.collection('users').find(myData);
-   cursor.each(function(err, doc) {
+    var myData = {
+      handle:payload.user
+    }
+    var cursor = db.collection('users').find(myData);
+    cursor.each(function(err, doc) {
       assert.equal(err, null);
       if (doc != null) {
         users.push(doc)
       } else {
         callback();
-    }
- });
- }
+      }
+    });
+  }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('finding updated user info');
@@ -125,15 +126,15 @@ function findUserUpdate(payload, b){
 };
 
 function newUser(user, a){
- var neophite = new User(user);
- users.push(neophite);
- userNumber ++;
- var insertUser = function(db,callback){
-   db.collection('users').insertOne(neophite, function(err, result) {
-   assert.equal(err, null);
-   callback();
-  })
- }
+  var neophite = new User(user);
+  users.push(neophite);
+  userNumber ++;
+  var insertUser = function(db,callback){
+    db.collection('users').insertOne(neophite, function(err, result) {
+      assert.equal(err, null);
+      callback();
+    })
+  }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('I added a new user to the database');
@@ -155,29 +156,29 @@ function makeTweet(tweet, a){
   var insertTweet = function(db,callback){
     db.collection('users').update(handle,{ $push: mydata })
   }
-   MongoClient.connect(url, function(err,db){
-     assert.equal(null,err);
-     console.log('I added a new user to the database');
-     insertTweet(db,function(){
-       db.close();
-       myEvent.emit(a)
-     })
-   })
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I added a new user to the database');
+    insertTweet(db,function(){
+      db.close();
+      myEvent.emit(a)
+    })
+  })
 };
 
 function findTweets(b){
   var findTweets = function(db, callback) {
     var cursor = db.collection('tweets').find();
     cursor.each(function(err, doc) {
-       assert.equal(err, null);
-       if (doc != null) {
-         tweets.push(doc)
-       } else {
-         callback();
-     }
-   });
+      assert.equal(err, null);
+      if (doc != null) {
+        tweets.push(doc)
+      } else {
+        callback();
+      }
+    });
   }
-    MongoClient.connect(url, function(err,db){
+  MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('Finding tweets in the database');
     findTweets(db,function(){
@@ -192,20 +193,20 @@ function updateFindTweets(a){
   var upTweets = function(db, callback) {
     var cursor = db.collection('tweets').find();
     cursor.each(function(err, doc) {
-       assert.equal(err, null);
-       if (doc != null) {
-         updateTweets.push(doc)
-       } else {
-         callback();
-     }
-   });
+      assert.equal(err, null);
+      if (doc != null) {
+        updateTweets.push(doc)
+      } else {
+        callback();
+      }
+    });
   }
-    MongoClient.connect(url, function(err,db){
+  MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('Finding updated tweets in the database');
     upTweets(db,function(){
       db.close();
-      myEvent.emit(a, updateTweets)
+      myEvent.emit(a)
     })
   })
 };
@@ -218,69 +219,54 @@ function checkFollowingTweets(user){
     var follow = user[i].handle;
     for(var y = 0; y <tweets.length; y++){
       if (follow == tweets[y].handle){
-      var a = tweets[y];
-      payload.push(a);
+        var a = tweets[y];
+        payload.push(a);
       }
     }
   }
   return payload;
 };
 
-function updateFollowingTweets(user, something){
-  var payload = []
-  var something = something;
-  for(var i = 0; i<user.length; i++){
-    var follow = user[i].handle;
-    for(var y = 0; y <something.length; y++){
-      if (follow == something[y].handle){
-      var a = something[y];
-      payload.push(a);
-      }
-    }
-  }
-  return payload;
-};
 
 function findSuggestions(a){
-  var suggestions = [];
   var findUsers = function(db, callback) {
-   var cursor = db.collection('users').find().limit(9);
-   cursor.each(function(err, doc) {
+    var cursor = db.collection('users').find().limit(25);
+    cursor.each(function(err, doc) {
       assert.equal(err, null);
       if (doc != null) {
         suggestions.push(doc)
       } else {
         callback();
-    }
- });
- }
+      }
+    });
+  }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('Finding suggestions');
     findUsers(db,function(){
       db.close();
-      myEvent.emit(a, suggestions)
+      myEvent.emit(a)
     })
   })
 };
 
-function checkSuggestions(user, suggestions){
-  var suggestions = suggestions;
+function checkSuggestions(user){
+  var sugg = suggestions;
   var name = user.handle;
-  for (var z = 0; z<suggestions.length; z++){
-    if (name == suggestions[z].handle){
-      suggestions.splice(z,1);
+  for (var z = 0; z<sugg.length; z++){
+    if (name == sugg[z].handle){
+      sugg.splice(z,1);
     }
   }
   for(var i = 0; i<user.following.length; i++){
     var follow = user.following[i].handle;
-    for(var y = 0; y <suggestions.length; y++){
-      if (follow == suggestions[y].handle){
-        suggestions.splice(y,1);
+    for(var y = 0; y <sugg.length; y++){
+      if (follow == sugg[y].handle){
+        sugg.splice(y,1);
       }
     }
   }
-  return suggestions;
+  return sugg;
 };
 
 function addFollower(user, a){
@@ -296,17 +282,17 @@ function addFollower(user, a){
   var myData2 = {
     followers:handle
   }
-   MongoClient.connect(url, function(err,db){
-     assert.equal(null,err);
-     console.log('I am updating followers');
-     var bulk = db.collection('users').initializeUnorderedBulkOp();
-     bulk.find(handle).update({ $push: myData });
-     bulk.find(handle).update({$inc:{"numberOfFollowing" : 1}});
-     bulk.find(handle2).update({ $push: myData2 });
-     bulk.find(handle2).update({ $inc: {"numberOfFollowers": 1}});
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am updating followers');
+    var bulk = db.collection('users').initializeUnorderedBulkOp();
+    bulk.find(handle).update({ $push: myData });
+    bulk.find(handle).update({$inc:{"numberOfFollowing" : 1}});
+    bulk.find(handle2).update({ $push: myData2 });
+    bulk.find(handle2).update({ $inc: {"numberOfFollowers": 1}});
     bulk.execute();
     myEvent.emit(a);
-   })
+  })
 }
 
 app.use(express.static('./public/'));
@@ -317,8 +303,8 @@ app.get('/home', cookieParser(), function(req,res){
     myEvent.on('cookie', function(){
       for(var i= 0; i< users.length; i++){
         if( req.cookies.user == users[i]._id && req.cookies.id == users[i].handle){
-           res.json(users[i]);
-           res.end();
+          res.json(users[i]);
+          res.end();
         }
       }
     })
@@ -328,17 +314,17 @@ app.get('/home', cookieParser(), function(req,res){
 })
 
 /*app.get('/userTimeline', cookieParser(), function(req, res) {
-  for(var i= 0; i< users.length; i++){
-    if(req.cookies.id == users[i].handle){
-      var user = users[i].following;
-       findFollowingTweets(users[i].following, 'followingTweets');
-       myEvent.on('followingTweets', function(body){
-         var payload = checkFollowing(user,body);
-         res.json(payload);
-         res.end()
-      })
-    }
-  }
+for(var i= 0; i< users.length; i++){
+if(req.cookies.id == users[i].handle){
+var user = users[i].following;
+findFollowingTweets(users[i].following, 'followingTweets');
+myEvent.on('followingTweets', function(body){
+var payload = checkFollowing(user,body);
+res.json(payload);
+res.end()
+})
+}
+}
 });*/
 
 app.post('/tweet', jsonParser,function(req, res) {
@@ -350,38 +336,38 @@ app.post('/tweet', jsonParser,function(req, res) {
 });
 
 /*app.post('/signup', jsonParser, function(req,res){
-  newUser(req.body, 'signup');
-  myEvent.on('signup', function(result){
-    res.cookie('user', result._id);
-    res.cookie('id', result.handle);
-    res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
-    res.json(result);
-    console.log('We have a new user!' + ' Total number of users: ' + userNumber );
-  })
+newUser(req.body, 'signup');
+myEvent.on('signup', function(result){
+res.cookie('user', result._id);
+res.cookie('id', result.handle);
+res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
+res.json(result);
+console.log('We have a new user!' + ' Total number of users: ' + userNumber );
+})
 });*/
 
 
 /*app.get('/suggestions', cookieParser(), function(req, res) {
-  for(var i= 0; i< users.length; i++){
-    if(req.cookies.id == users[i].handle){
-      var user = users[i];
-      findSuggestions('suggestions');
-       myEvent.on('suggestions', function(body){
-        var payload = checkSuggestions(user, body);
-        res.json(payload);
-        res.end()
-      })
-    }
-  }
+for(var i= 0; i< users.length; i++){
+if(req.cookies.id == users[i].handle){
+var user = users[i];
+findSuggestions('suggestions');
+myEvent.on('suggestions', function(body){
+var payload = checkSuggestions(user, body);
+res.json(payload);
+res.end()
+})
+}
+}
 });*/
 /*app.post('/addFollower', jsonParser, function(req, res) {
-  console.log(req.body);
-  addFollower(req.body, 'addFollower');
-  myEvent.on('addFollower', function(){
-    console.log('hello');
-    res.sendStatus(200);
-    res.end()
-  })
+console.log(req.body);
+addFollower(req.body, 'addFollower');
+myEvent.on('addFollower', function(){
+console.log('hello');
+res.sendStatus(200);
+res.end()
+})
 });*/
 
 io.on('connection', function(socket){
@@ -395,7 +381,7 @@ io.on('connection', function(socket){
   })
   socket.on('signup', function(body){
     newUser(body, 'newsignup');
-    myEvent.on('snewignup', function(result){
+    myEvent.on('newignup', function(result){
       socket.emit('goDash', result)
     })
   })
@@ -403,11 +389,11 @@ io.on('connection', function(socket){
     for(var i= 0; i< users.length; i++){
       if(body.handle == users[i].handle){
         var user = users[i].following;
-        tweets = [];
-         findTweets('followingTweets');
-         myEvent.on('followingTweets', function(a){
-           var payload = checkFollowingTweets(user,a);
-           socket.emit('sendUserTimeline', payload)
+        tweets.length =0;
+        findTweets('followingTweets');
+        myEvent.on('followingTweets', function(a){
+          var payload = checkFollowingTweets(user,a);
+          socket.emit('sendUserTimeline', payload)
         })
       }
     }
@@ -416,9 +402,9 @@ io.on('connection', function(socket){
     for(var i= 0; i< users.length; i++){
       if(body.handle == users[i].handle){
         var user = users[i];
-        findSuggestions('evsuggestions');
-         myEvent.on('evsuggestions', function(a){
-          var payload = checkSuggestions(user, a);
+        findSuggestions('eventSuggestions');
+        myEvent.on('eventSuggestions', function(a){
+          var payload = checkSuggestions(user);
           socket.emit('sendSuggestions', payload)
         })
       }
@@ -426,48 +412,49 @@ io.on('connection', function(socket){
   })
   socket.on('addFollower', function(body){
     var user = body;
-    addFollower(body, 'evaddFollower');
-    myEvent.on('evaddFollower', function(){
-      users = [];
-    findUserUpdate(user, 'updateUser')
+    addFollower(body, 'eventAddFollower');
+    myEvent.on('eventAddFollower', function(){
+      users.length = 0;
+      findUpdateUser(user, 'updateUser');
       myEvent.on('updateUser', function(){
         for (var i = 0; i<users.length; i++){
           if(user.user == users[i].handle){
+            console.log(users);
             var payload = users[i];
-            socket.emit('sendNewInfo', payload);
+            socket.emit('sendUpdateUser', payload);
           }
         }
       })
     })
-  })
+  });
   socket.on('updateTimeline', function(body){
     var user = body.following;
-    updateFindTweets('updateTweets');
+    tweets.length = 0;
+    findTweets('updateTweets');
     myEvent.on('updateTweets', function(something){
-      var payload = updateFollowingTweets(user,something);
+      var payload = checkFollowingTweets(user);
       socket.emit('sendUpdateTweets', payload)
     })
   })
   socket.on('updateSuggestions', function(body){
     var user = body;
-    findSuggestions('newSuggestions');
-    myEvent.on('newSuggestions', function(something){
-      var payload = checkSuggestions(user,something);
-      socket.emit('sendNewSuggestions', payload)
-    })
+    var payload = checkSuggestions(user);
+    socket.emit('sendNewSuggestions', payload)
   })
-})
+});
+
+
 /*app.post('/login', jsonParser, function(req, res) {
-  findUser(req.body, 'send')
-  myEvent.on('send', function(){
-    var result = checkLogin(req.body);
-    res.cookie('user', result._id);
-    res.cookie('id', result.handle);
-    res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
-    res.json(result);
-    res.end()
-    console.log("I sent settings for: " + req.body.id);
-  })
+findUser(req.body, 'send')
+myEvent.on('send', function(){
+var result = checkLogin(req.body);
+res.cookie('user', result._id);
+res.cookie('id', result.handle);
+res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
+res.json(result);
+res.end()
+console.log("I sent settings for: " + req.body.id);
+})
 });*/
 
 server.listen(3000);

@@ -15,7 +15,7 @@ var suggestions = document.getElementById('suggestions');
 var socket = io();
 var myUser = {};
 
-var promise = new Promise(function(resolve, reject){
+/*var promise = new Promise(function(resolve, reject){
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/home', true)
   xhr.send();
@@ -29,7 +29,7 @@ var promise = new Promise(function(resolve, reject){
 promise.then(function(value){
   myUser = value;
   showDashBoard();
-})
+})*/
 
 socket.on('goDash',function(response){
   myUser = response;
@@ -106,12 +106,13 @@ signUpBtn.addEventListener('click', function(event){
 function showDashBoard(){
   landingPage.className = "hidden";
   dashboard.className = "row-fluid"
-  appendUserInfo(myUser);
+  appendUserInfo();
   getUserTimeline();
   getSuggestions();
 }
 
 function appendUserInfo(user){
+  var user = myUser;
   var thumbnail = document.createElement('div')
   thumbnail.className ="thumbnail"
   var caption = document.createElement('div')
@@ -223,8 +224,8 @@ function getSuggestions(){
   }*/
 }
 
-function appendSuggestions(users){
-  console.log(users);
+function appendSuggestions(body){
+  var users = body;
   for(var i = 0; i<users.length; i++){
     var media = document.createElement('div');
     media.className = "media";
@@ -266,8 +267,9 @@ function addFollower(target){
   }
   socket.emit('addFollower', myData);
 
-  socket.on('sendNewInfo', function(body){
+  socket.on('sendUpdateUser', function(body){
     myUser = body;
+    console.log(myUser);
     updateTimeline(body);
   })
   //var payload = JSON.stringify(myData);
@@ -302,12 +304,13 @@ function getUpdateTimeline(body){
     handle:body.handle,
     following:body.following
   }
+
   socket.emit('updateTimeline', myData)
   socket.emit('updateSuggestions', myData)
-  socket.once('sendUpdateTweets', function(tweets){
+  socket.on('sendUpdateTweets', function(tweets){
     appendUserTimeline(tweets);
   })
-  socket.once('sendNewSuggestions', function(suggestions){
+  socket.on('sendNewSuggestions', function(suggestions){
     appendSuggestions(suggestions);
   })
 }
