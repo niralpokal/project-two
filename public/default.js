@@ -12,29 +12,25 @@ var timeline = document.getElementById('timeline');
 var tweetBox = document.getElementById('tweetBox');
 var submitTweetBtn = document.getElementById('submitTweet');
 var suggestions = document.getElementById('suggestions');
-var socket = io();
 var myUser = {};
 
-var promise = new Promise(function(resolve, reject){
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/home', true)
-  xhr.send();
-  xhr.onload = function(){
-    if(xhr.status === 200){
-      var response = JSON.parse(xhr.responseText);
-      resolve(response);
-    }
-  }
+/*var promise = new Promise(function(resolve, reject){
+var xhr = new XMLHttpRequest();
+xhr.open('GET', '/home', true)
+xhr.send();
+xhr.onload = function(){
+if(xhr.status === 200){
+var response = JSON.parse(xhr.responseText);
+resolve(response);
+} else if (xhr.status === 245){
+reject();
+}
+}
 });
 promise.then(function(value){
-  myUser = value;
-  showDashBoard();
-})
-
-socket.on('goDash',function(response){
-  myUser = response;
-  showDashBoard();
-})
+myUser = value;
+showDashBoard();
+})*/
 
 loginButton.addEventListener('click',function(){
   $('#login').modal('show')
@@ -47,35 +43,33 @@ signUpButton.addEventListener('click', function(){
 loginBtn.addEventListener('click', function(event){
   $('#login').modal('toggle');
   event.preventDefault();
-  //var xhr = new XMLHttpRequest();
-  //xhr.open('POST', '/login', true);
-  //xhr.setRequestHeader('Content-Type', 'application/json')
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/login', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
   var id = document.getElementById('loginName').value;
   var pass = document.getElementById('loginPass').value;
   var myData = {
     id:id,
     pass:pass
   }
-  socket.emit('login', myData)
-
-  //var payload = JSON.stringify(myData);
-  //console.log(payload);
-  //xhr.send(payload);
-  //xhr.onload = function(){
-  //  if (xhr.status === 200){
-  //    var response = JSON.parse(xhr.responseText);
-  //    myUser = response;
-  //    showDashBoard();
-  //  }
-//  }
+  var payload = JSON.stringify(myData);
+  console.log(payload);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if (xhr.status === 200){
+      var response = JSON.parse(xhr.responseText);
+      myUser = response;
+      showDashBoard();
+    }
+  }
 })
 
 signUpBtn.addEventListener('click', function(event){
   $('#sign-up').modal('toggle');
   event.preventDefault();
-  //var xhr = new XMLHttpRequest();
-  //xhr.open('POST', '/signup', true);
-  //xhr.setRequestHeader('Content-Type', 'application/json')
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/signup', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
   var name = document.getElementById('signUpName').value;
   var handle = document.getElementById('signUpId').value;
   var pass1 = document.getElementById('signUpPass1').value;
@@ -86,36 +80,42 @@ signUpBtn.addEventListener('click', function(event){
       id:handle,
       pass:pass1,
     }
-    socket.emit('signup', myData);
-  //  var payload = JSON.stringify(myData);
-  //  xhr.send(payload);
+    var payload = JSON.stringify(myData);
+    xhr.send(payload);
   }else{
     console.log('error');
     pass1.className = 'form-control primary'
     pass2.className = 'form-control primary'
   }
-  /*xhr.onload = function(){
+  xhr.onload = function(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
       myUser = response;
       showDashBoard();
     }
-  }*/
+  }
 })
 
 function showDashBoard(){
   landingPage.className = "hidden";
   dashboard.className = "row-fluid"
-  appendUserInfo(myUser);
+  appendUserInfo();
   getUserTimeline();
   getSuggestions();
 }
 
-function appendUserInfo(user){
+function appendUserInfo(){
+  var user = myUser;
   var thumbnail = document.createElement('div')
-  thumbnail.className ="thumbnail"
+  thumbnail.className ="thumbnail well"
   var caption = document.createElement('div')
   caption.className="caption"
+  var picture = document.createElement('img');
+  picture.setAttribute('src', user.picture);
+  picture.setAttribute('alt', "Profile Pic")
+  picture.setAttribute('class', "img-rounded")
+  picture.setAttribute('width', "200");
+  picture.setAttribute('height', "200");
   var userName = document.createElement('h1');
   var userHandle = document.createElement('p');
   var tweetsBtn = document.createElement('a');
@@ -151,21 +151,17 @@ function appendUserInfo(user){
   caption.appendChild(tweetsBtn);
   caption.appendChild(followersBtn);
   caption.appendChild(followingBtn);
+  thumbnail.appendChild(picture);
   thumbnail.appendChild(caption);
   userInfo.appendChild(thumbnail);
 }
 
 function getUserTimeline(){
-  var myData = {
-    handle:myUser.handle,
-    following:myUser.following
-  }
-  socket.emit('userTimeline', myData);
-  socket.on('sendUserTimeline', function(body){
-    console.log(body);
-    appendUserTimeline(body);
-  })
-/*  var xhr = new XMLHttpRequest();
+  //  socket.emit('userTimeline', myData);
+  //socket.on('sendUserTimeline', function(body){
+  //  appendUserTimeline(body);
+  //  })
+  var xhr = new XMLHttpRequest();
   xhr.open('GET', '/userTimeline', true);
   xhr.send();
   xhr.onload = function(){
@@ -174,12 +170,13 @@ function getUserTimeline(){
       var followingTweets = _.sortBy(response, 'date');
       appendUserTimeline(followingTweets);
     }
-  }*/
+  }
 };
+
 function appendUserTimeline(body){
   for(var i = 0; i<body.length; i++){
     var innerTweets = body[i].tweets;
-    console.log(innerTweets);
+    var img = body[i].picture;
     for(var z = 0; z <innerTweets.length; z++){
       var media = document.createElement('div');
       media.className = "media";
@@ -187,6 +184,12 @@ function appendUserTimeline(body){
       mediaLeft.className = "media-left";
       var mediaBody = document.createElement('div');
       mediaBody.className = "media-body"
+      var picture = document.createElement('img')
+      picture.setAttribute('src', img);
+      picture.setAttribute('alt', "Profile Pic");
+      picture.setAttribute('class', "img-rounded")
+      picture.setAttribute('width', "48");
+      picture.setAttribute('height', "48");
       var h5 = document.createElement('h5');
       var p1 = document.createElement('p');
       var p2 = document.createElement('p');
@@ -197,6 +200,7 @@ function appendUserTimeline(body){
       h5.appendChild(handle);
       mediaBody.appendChild(h5);
       mediaBody.appendChild(p2);
+      mediaLeft.appendChild(picture);
       media.appendChild(mediaLeft);
       media.appendChild(mediaBody);
       timeline.appendChild(media);
@@ -205,27 +209,19 @@ function appendUserTimeline(body){
 }
 
 function getSuggestions(){
-  var myData = {
-    handle:myUser.handle,
-    following:myUser.following
-  }
-  socket.emit('suggestions', myData);
-  socket.on('sendSuggestions',function(body){
-    appendSuggestions(body);
-  })
-/*  var xhr = new XMLHttpRequest();
+  var xhr = new XMLHttpRequest();
   xhr.open('GET', '/suggestions', true);
   xhr.send();
   xhr.onload = function(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
-      console.log(response);
       appendSuggestions(response);
     }
-  }*/
+  }
 }
 
-function appendSuggestions(users){
+function appendSuggestions(body){
+  var users = body;
   for(var i = 0; i<users.length; i++){
     var media = document.createElement('div');
     media.className = "media";
@@ -233,6 +229,12 @@ function appendSuggestions(users){
     mediaLeft.className = "media-left";
     var mediaBody = document.createElement('div');
     mediaBody.className = "media-body"
+    var picture = document.createElement('img');
+    picture.setAttribute('src', users[i].picture);
+    picture.setAttribute('alt', "Profile Pic");
+    picture.setAttribute('class', "img-rounded")
+    picture.setAttribute('width', "48");
+    picture.setAttribute('height', "48");
     var button = document.createElement('button');
     button.className = "btn btn-default"
     button.setAttribute('data-id', 'follow');
@@ -242,11 +244,12 @@ function appendSuggestions(users){
     var p1 = document.createElement('p');
     var p2 = document.createElement('p');
     var handle = document.createTextNode('@' + users[i].handle)
-  //  var name  = document.createTextNode('');
+    //  var name  = document.createTextNode('');
     //var tweet = document.createTextNode(innerTweets[i].text)
     button.appendChild(buttonText);
     p2.appendChild(button);
     h5.appendChild(handle);
+    mediaLeft.appendChild(picture);
     mediaBody.appendChild(h5);
     mediaBody.appendChild(p2);
     media.appendChild(mediaLeft);
@@ -254,67 +257,82 @@ function appendSuggestions(users){
     suggestions.appendChild(media);
   }
 }
+
 function addFollower(target){
   var parent = target.parentNode;
   var theParent = parent.parentNode.getElementsByTagName('h5')[0];
   var toFollow = theParent.dataset.id
-  //var xhr = new XMLHttpRequest();
-  //xhr.open('POST', '/addFollower', true);
-  //xhr.setRequestHeader('Content-Type', 'application/json')
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/addFollower', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
   var myData = {
     user:myUser.handle,
     follow:toFollow
   }
-  socket.emit('addFollower', myData);
-
-  socket.on('sendNewFollower', function(body){
-    myUser = body
-    updateTimeline();
-  })
-  //var payload = JSON.stringify(myData);
-//  xhr.send(payload);
-/*  xhr.onload = function(){
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
     if(xhr.status === 200){
-      console.log('hello');
-      //var response = JSON.parse(xhr.responseText);
+      getUpdatedUser();
+    }
+  }
+}
+
+function getUpdatedUser(){
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/getFollower', true);
+  xhr.send();
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var response = JSON.parse(xhr.responseText);
+      myUser = response;
       updateTimeline();
     }
-  }*/
+  }
 }
+
 function myTarget(event){
   var ev = event;
   var target = ev.target;
   console.log(target);
   var theTarget = target.dataset.id;
-  if (theTarget === 'follow'){
+  if (theTarget == 'follow'){
     addFollower(target);
   }
 }
-function updateTimeline(body){
+
+function updateTimeline(){
   removeTimeline();
   removeUserInfo();
   removeSuggestions();
-  //showDashBoard();
+  appendUserInfo();
+  getUserTimeline();
+  getSuggestions();
 }
+
+
+
 function removeTimeline(){
   var element = timeline;
-  console.log('doing something');
   while(element.firstChild){
     element.removeChild(element.firstChild);
   }
 }
+
 function removeUserInfo(){
   var element = userInfo;
   while(element.firstChild){
     element.removeChild(element.firstChild);
   }
 }
+
 function removeSuggestions(){
   var element = suggestions;
   while(element.firstChild){
     element.removeChild(element.firstChild);
   }
 }
+
 document.body.addEventListener('click', myTarget)
 submitTweetBtn.addEventListener('click', function(){
 })
