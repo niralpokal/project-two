@@ -5,8 +5,6 @@ var Twitter = require('twitter');
 var env = require('var');
 var app = express();
 var jsonParser = bodyParser.json();
-var server = require('http').createServer(app);
-var io = require('socket.io')(server);
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
@@ -107,11 +105,6 @@ function login(res, payload){
   res.json(result);
 }
 
-function newUser(user, a){
-
-
-};
-
 function makeTweet(tweet, a){
   var chirp = new Tweet(tweet);
   var handle = {
@@ -146,32 +139,6 @@ function findTweets(db, payload, callback) {
   })
 }
 
-
-
-function updateFindTweets(a){
-  var updateTweets = []
-  var upTweets = function(db, callback) {
-    var cursor = db.collection('tweets').find();
-    cursor.each(function(err, doc) {
-      assert.equal(err, null);
-      if (doc != null) {
-        updateTweets.push(doc)
-      } else {
-        callback();
-      }
-    });
-  }
-  MongoClient.connect(url, function(err,db){
-    assert.equal(null,err);
-    console.log('Finding updated tweets in the database');
-    upTweets(db,function(){
-      db.close();
-      myEvent.emit(a)
-    })
-  })
-};
-
-
 function checkFollowingTweets(user){
   var payload = []
   var user = user;
@@ -187,8 +154,6 @@ function checkFollowingTweets(user){
   return payload;
 };
 
-
-
 function findSuggestions(db, payload, callback) {
   suggestions.length = 0;
   var cursor = db.collection('users').find().limit(25);
@@ -201,8 +166,6 @@ function findSuggestions(db, payload, callback) {
     }
   })
 }
-
-
 
 function checkSuggestions(user){
   var sugg = suggestions;
@@ -222,8 +185,6 @@ function checkSuggestions(user){
   }
   return sugg;
 };
-
-
 
 app.use(express.static('./public/'));
 
@@ -364,91 +325,4 @@ app.post('/signup', jsonParser, function(req,res){
   })
 });
 
-
-
-
-
-
-
-/*io.on('connection', function(socket){
-socket.on('login', function(body){
-myUsers.length =0;
-suggestions.length =0;
-findUser(body, 'send');
-myEvent.on('send', function(){
-var result = checkLogin(body);
-socket.emit('goDash', result);
-})
-})
-socket.on('signup', function(body){
-newUser(body, 'newsignup');
-myEvent.on('newsignup', function(result){
-socket.emit('goDash', result)
-})
-})
-socket.on('userTimeline', function(body){
-for(var i= 0; i< myUsers.length; i++){
-if(body.handle == myUsers[i].handle){
-var user = myUsers[i].following;
-tweets.length =0;
-findTweets('followingTweets');
-myEvent.on('followingTweets', function(a){
-var payload = checkFollowingTweets(user,a);
-socket.emit('sendUserTimeline', payload)
-})
-}
-}
-})
-socket.on('suggestions', function(body){
-for(var i= 0; i< myUsers.length; i++){
-if(body.handle == myUsers[i].handle){
-var user = myUsers[i];
-findSuggestions('eventSuggestions');
-myEvent.on('eventSuggestions', function(a){
-var payload = checkSuggestions(user);
-socket.emit('sendSuggestions', payload)
-})
-}
-}
-})
-socket.on('addFollow', function(body){
-var user = body;
-addFollower(body, 'eventAddFollower');
-console.log(1);
-myEvent.on('eventAddFollower', function(){//it is emitting this twice on the second click
-myUsers.length = 0;
-console.log(myUsers);
-findUpdateUser(user, 'updateUser');//runs this twice
-myEvent.on('updateUser', function(){
-for (var i = 0; i<myUsers.length; i++){
-if(user.user == myUsers[i].handle){
-var payload = myUsers[i];
-console.log(2);//runs this 9 times
-socket.emit('sendUpdateUser', payload);
-}
-}
-})
-})
-});
-socket.on('updateTimeline', function(body){
-var user = body.following;
-tweets.length = 0;
-findTweets('updateTweets')//runs this 18 times
-myEvent.on('updateTweets', function(something){
-var payload = checkFollowingTweets(user);
-socket.emit('sendUpdateTweets', payload)
-return;
-})
-})
-socket.on('updateSuggestions', function(body){
-var user = body;
-var payload = checkSuggestions(user);
-socket.emit('sendNewSuggestions', payload)
-return;
-})
-});
-*/
-
-
-
-server.listen(8080);
+app.listen(8080);
