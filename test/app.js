@@ -36,6 +36,7 @@ function User(user){
   this.messages =[];
   this.numberOfNotifications = 0;
   this.numberOfMessages = 0;
+  this.picture = "https://abs.twimg.com/sticky/default_profile_images/default_profile_0_200x200.png"
 }
 function Tweet(tweet){
   this.name = tweet.name
@@ -48,6 +49,7 @@ function Tweet(tweet){
   this.numberOfRetweets = 0;
   this.tags = tweet.tag;
   this.mentions = tweet.mentions;
+  this.picture = tweet.picture;
 }
 
 var client = new Twitter({
@@ -73,35 +75,43 @@ function checkLogin(check){
   }
 };
 
-function findUser(payload, b){
-  var payload = payload;
-  var findUsers = function(db, callback) {
-    var myData = {
-      handle:payload.id
-    }
-    var cursor = db.collection('users').find(myData);
-    cursor.each(function(err, doc) {
-      assert.equal(err, null);
-      if (doc != null) {
-        myUsers.push(doc)
-      } else {
-        callback();
-      }
-    });
-  }
-  MongoClient.connect(url, function(err,db){
-    assert.equal(null,err);
-    console.log('finding a user');
-    findUsers(db,function(){
-      db.close();
-      myEvent.emit(b)
-    })
-  })
-};
 
-function findUpdateUser(payload, b){
+
+function findUser(db, payload, callback) {
   var payload = payload;
-  var findUsers = function(db, callback) {
+  var myData = {
+    handle:payload.id
+  }
+  console.log(payload);
+  var cursor = db.collection('users').find(myData);
+  cursor.each(function(err, doc) {
+    assert.equal(err, null);
+    if (doc != null) {
+      myUsers.push(doc)
+    } else {
+      callback();
+    }
+  });
+}
+
+function insertUser(db, neophite, callback){
+  db.collection('users').insertOne(neophite, function(err, result) {
+    assert.equal(err, null);
+    callback();
+  })
+}
+
+function login(res, payload){
+  var result = checkLogin(payload);
+  res.cookie('user', result._id);
+  res.cookie('id', result.handle);
+  res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
+  res.json(result);
+}
+
+
+
+function findUpdatedUser(db, payload, callback) {
     var myData = {
       handle:payload.user
     }
@@ -114,35 +124,12 @@ function findUpdateUser(payload, b){
         callback();
       }
     });
-  }
-  MongoClient.connect(url, function(err,db){
-    assert.equal(null,err);
-    console.log('finding updated user info');
-    findUsers(db,function(){
-      db.close();
-      myEvent.emit(b)
-    })
-  })
-};
+}
+
 
 function newUser(user, a){
-  var neophite = new User(user);
-  myUsers.push(neophite);
-  userNumber ++;
-  var insertUser = function(db,callback){
-    db.collection('users').insertOne(neophite, function(err, result) {
-      assert.equal(err, null);
-      callback();
-    })
-  }
-  MongoClient.connect(url, function(err,db){
-    assert.equal(null,err);
-    console.log('I added a new user to the database');
-    insertUser(db,function(){
-      db.close();
-      myEvent.emit(a, neophite)
-    })
-  })
+
+
 };
 
 function makeTweet(tweet, a){
@@ -166,27 +153,19 @@ function makeTweet(tweet, a){
   })
 };
 
-function findTweets(b){
-  var findTweets = function(db, callback) {
-    var cursor = db.collection('tweets').find();
-    cursor.each(function(err, doc) {
-      assert.equal(err, null);
-      if (doc != null) {
-        tweets.push(doc)
-      } else {
-        callback();
-      }
-    });
-  }
-  MongoClient.connect(url, function(err,db){
-    assert.equal(null,err);
-    console.log('Finding tweets in the database');
-    findTweets(db,function(){
-      db.close();
-      myEvent.emit(b)
-    })
+function findTweets(db, payload, callback) {
+  var cursor = db.collection('tweets').find();
+  cursor.each(function(err, doc) {
+    assert.equal(err, null);
+    if (doc != null) {
+      tweets.push(doc)
+    } else {
+      callback();
+    }
   })
-};
+}
+
+
 
 function updateFindTweets(a){
   var updateTweets = []
@@ -228,27 +207,20 @@ function checkFollowingTweets(user){
 };
 
 
-function findSuggestions(a){
-  var findUsers = function(db, callback) {
-    var cursor = db.collection('users').find().limit(25);
-    cursor.each(function(err, doc) {
-      assert.equal(err, null);
-      if (doc != null) {
-        suggestions.push(doc)
-      } else {
-        callback();
-      }
-    });
-  }
-  MongoClient.connect(url, function(err,db){
-    assert.equal(null,err);
-    console.log('Finding suggestions');
-    findUsers(db,function(){
-      db.close();
-      myEvent.emit(a)
-    })
+
+function findSuggestions(db, payload, callback) {
+  var cursor = db.collection('users').find().limit(25);
+  cursor.each(function(err, doc) {
+    assert.equal(err, null);
+    if (doc != null) {
+      suggestions.push(doc)
+    } else {
+      callback();
+    }
   })
-};
+}
+
+
 
 function checkSuggestions(user){
   var sugg = suggestions;
@@ -269,7 +241,77 @@ function checkSuggestions(user){
   return sugg;
 };
 
-function addFollower(user, a){
+
+
+app.use(express.static('./public/'));
+
+app.get('/home', cookieParser(), function(req,res){
+  if(req.cookies.remember == 'true'){
+    findUser(req.cookies, 'cookie');
+    myEvent.on('cookie', function(){
+      for(var i= 0; i< myUsers.length; i++){
+        if( req.cookies.user == myUsers[i]._id && req.cookies.id == myUsers[i].handle){
+          res.json(myUsers[i]);
+          res.end();
+        }
+      }
+    })
+  } else{
+    //res.send(245);
+    console.log('no cookies');
+  }
+})
+
+app.post('/login', jsonParser, function(req, res) {
+  var payload = req.body
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('finding a user');
+    findUser(db, payload, function(){
+      db.close();
+      login(res,payload);
+    })
+  })
+});
+
+app.get('/userTimeline', cookieParser(), function(req, res) {
+  for(var i= 0; i< myUsers.length; i++){
+    if(req.cookies.id == myUsers[i].handle){
+      var user = myUsers[i].following;
+      MongoClient.connect(url, function(err,db){
+        assert.equal(null,err);
+        console.log('Finding tweets in the database');
+        findTweets(db, user, function(){
+          db.close();
+          var payload = checkFollowingTweets(user);
+          res.json(payload);
+        })
+      })
+      break;
+    }
+  }
+})
+
+app.get('/suggestions', cookieParser(), function(req, res) {
+  for(var i= 0; i< myUsers.length; i++){
+    if(req.cookies.id == myUsers[i].handle){
+      var user = myUsers[i];
+      MongoClient.connect(url, function(err,db){
+        assert.equal(null,err);
+        console.log('Finding suggestions');
+        findSuggestions(db,user,function(){
+          db.close();
+          var payload = checkSuggestions(user);
+          res.json(payload);
+        })
+      })
+      break;
+    }
+  }
+});
+
+app.post('/addFollower', jsonParser, function(req, res) {
+  var user = req.body;
   var handle = {
     handle:user.user
   }
@@ -283,6 +325,7 @@ function addFollower(user, a){
     followers:handle
   }
   MongoClient.connect(url, function(err,db){
+    myUsers.length = 0;
     assert.equal(null,err);
     console.log('I am updating followers');
     var bulk = db.collection('users').initializeUnorderedBulkOp();
@@ -292,43 +335,30 @@ function addFollower(user, a){
     bulk.find(handle2).update({ $inc: {"numberOfFollowers": 1}});
     bulk.execute();
     db.close();
-    console.log(myEvent.emit(a));
-    //myEvent.emit(a);
+    res.sendStatus(200);
   })
-}
+});
 
-app.use(express.static('./public/'));
-
-/*app.get('/home', cookieParser(), function(req,res){
-  if(req.cookies.remember == 'true'){
-    findUser(req.cookies, 'cookie');
-    myEvent.on('cookie', function(){
-      for(var i= 0; i< myUsers.length; i++){
-        if( req.cookies.user == myUsers[i]._id && req.cookies.id == myUsers[i].handle){
+app.get('/getFollower', cookieParser, function(req, res) {
+  console.log('hello');
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am finding a updated user info');
+    findUser(db, req.cookies, function(){
+      db.close();
+      console.log(myUsers);
+      for(var i; i<myUsers.length; i++){
+        if(req.cookies.id == myUsers[i].handle){
+          console.log('hi');
           res.json(myUsers[i]);
-          res.end();
+          break;
         }
       }
     })
-  } else{
-    console.log('no cookies');
-  }
-})
-*/
-/*app.get('/userTimeline', cookieParser(), function(req, res) {
-for(var i= 0; i< users.length; i++){
-if(req.cookies.id == users[i].handle){
-var user = users[i].following;
-findFollowingTweets(users[i].following, 'followingTweets');
-myEvent.on('followingTweets', function(body){
-var payload = checkFollowing(user,body);
-res.json(payload);
-res.end()
-})
-}
-}
-});*/
-/*
+  })
+});
+
+
 app.post('/tweet', jsonParser,function(req, res) {
   makeTweet(req.body, 'tweet');
   myEvent.on('tweet', function(){
@@ -336,132 +366,109 @@ app.post('/tweet', jsonParser,function(req, res) {
     res.end()
   })
 });
-*/
-/*app.post('/signup', jsonParser, function(req,res){
-newUser(req.body, 'signup');
-myEvent.on('signup', function(result){
-res.cookie('user', result._id);
-res.cookie('id', result.handle);
-res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
-res.json(result);
-console.log('We have a new user!' + ' Total number of users: ' + userNumber );
-})
-});*/
 
-
-/*app.get('/suggestions', cookieParser(), function(req, res) {
-for(var i= 0; i< users.length; i++){
-if(req.cookies.id == users[i].handle){
-var user = users[i];
-findSuggestions('suggestions');
-myEvent.on('suggestions', function(body){
-var payload = checkSuggestions(user, body);
-res.json(payload);
-res.end()
-})
-}
-}
-});*/
-/*app.post('/addFollower', jsonParser, function(req, res) {
-console.log(req.body);
-addFollower(req.body, 'addFollower');
-myEvent.on('addFollower', function(){
-console.log('hello');
-res.sendStatus(200);
-res.end()
-})
-});*/
-
-io.on('connection', function(socket){
-  socket.on('login', function(body){
-    myUsers.length =0;
-    suggestions.length =0;
-    findUser(body, 'send');
-    myEvent.on('send', function(){
-      var result = checkLogin(body);
-      socket.emit('goDash', result);
+app.post('/signup', jsonParser, function(req,res){
+  var neophite = new User(req.body);
+  myUsers.push(neophite);
+  userNumber ++;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I added a new user to the database');
+    insertUser(db, neophite, function(){
+      db.close();
+      res.cookie('user', result._id);
+      res.cookie('id', result.handle);
+      res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
+      res.json(neophite);
     })
-  })
-  socket.on('signup', function(body){
-    newUser(body, 'newsignup');
-    myEvent.on('newsignup', function(result){
-      socket.emit('goDash', result)
-    })
-  })
-  socket.on('userTimeline', function(body){
-    for(var i= 0; i< myUsers.length; i++){
-      if(body.handle == myUsers[i].handle){
-        var user = myUsers[i].following;
-        tweets.length =0;
-        findTweets('followingTweets');
-        myEvent.on('followingTweets', function(a){
-          var payload = checkFollowingTweets(user,a);
-          socket.emit('sendUserTimeline', payload)
-        })
-      }
-    }
-  })
-  socket.on('suggestions', function(body){
-    for(var i= 0; i< myUsers.length; i++){
-      if(body.handle == myUsers[i].handle){
-        var user = myUsers[i];
-        findSuggestions('eventSuggestions');
-        myEvent.on('eventSuggestions', function(a){
-          var payload = checkSuggestions(user);
-          socket.emit('sendSuggestions', payload)
-        })
-      }
-    }
-  })
-  socket.on('addFollow', function(body){
-    var user = body;
-    addFollower(body, 'eventAddFollower');
-    console.log(1);
-    myEvent.on('eventAddFollower', function(){//it is emitting this twice on the second click
-      myUsers.length = 0;
-      console.log(myUsers);
-      findUpdateUser(user, 'updateUser');//runs this twice
-      myEvent.on('updateUser', function(){
-        for (var i = 0; i<myUsers.length; i++){
-          if(user.user == myUsers[i].handle){
-            var payload = myUsers[i];
-            console.log(2);//runs this 9 times
-            socket.emit('sendUpdateUser', payload);
-          }
-        }
-      })
-    })
-  });
-  socket.on('updateTimeline', function(body){
-    var user = body.following;
-    tweets.length = 0;
-    findTweets('updateTweets')//runs this 18 times
-    myEvent.on('updateTweets', function(something){
-      var payload = checkFollowingTweets(user);
-      socket.emit('sendUpdateTweets', payload)
-      return;
-    })
-  })
-  socket.on('updateSuggestions', function(body){
-    var user = body;
-    var payload = checkSuggestions(user);
-    socket.emit('sendNewSuggestions', payload)
-    return;
   })
 });
 
 
-/*app.post('/login', jsonParser, function(req, res) {
-findUser(req.body, 'send')
+
+
+
+
+
+/*io.on('connection', function(socket){
+socket.on('login', function(body){
+myUsers.length =0;
+suggestions.length =0;
+findUser(body, 'send');
 myEvent.on('send', function(){
-var result = checkLogin(req.body);
-res.cookie('user', result._id);
-res.cookie('id', result.handle);
-res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
-res.json(result);
-res.end()
-console.log("I sent settings for: " + req.body.id);
+var result = checkLogin(body);
+socket.emit('goDash', result);
 })
-});*/
+})
+socket.on('signup', function(body){
+newUser(body, 'newsignup');
+myEvent.on('newsignup', function(result){
+socket.emit('goDash', result)
+})
+})
+socket.on('userTimeline', function(body){
+for(var i= 0; i< myUsers.length; i++){
+if(body.handle == myUsers[i].handle){
+var user = myUsers[i].following;
+tweets.length =0;
+findTweets('followingTweets');
+myEvent.on('followingTweets', function(a){
+var payload = checkFollowingTweets(user,a);
+socket.emit('sendUserTimeline', payload)
+})
+}
+}
+})
+socket.on('suggestions', function(body){
+for(var i= 0; i< myUsers.length; i++){
+if(body.handle == myUsers[i].handle){
+var user = myUsers[i];
+findSuggestions('eventSuggestions');
+myEvent.on('eventSuggestions', function(a){
+var payload = checkSuggestions(user);
+socket.emit('sendSuggestions', payload)
+})
+}
+}
+})
+socket.on('addFollow', function(body){
+var user = body;
+addFollower(body, 'eventAddFollower');
+console.log(1);
+myEvent.on('eventAddFollower', function(){//it is emitting this twice on the second click
+myUsers.length = 0;
+console.log(myUsers);
+findUpdateUser(user, 'updateUser');//runs this twice
+myEvent.on('updateUser', function(){
+for (var i = 0; i<myUsers.length; i++){
+if(user.user == myUsers[i].handle){
+var payload = myUsers[i];
+console.log(2);//runs this 9 times
+socket.emit('sendUpdateUser', payload);
+}
+}
+})
+})
+});
+socket.on('updateTimeline', function(body){
+var user = body.following;
+tweets.length = 0;
+findTweets('updateTweets')//runs this 18 times
+myEvent.on('updateTweets', function(something){
+var payload = checkFollowingTweets(user);
+socket.emit('sendUpdateTweets', payload)
+return;
+})
+})
+socket.on('updateSuggestions', function(body){
+var user = body;
+var payload = checkSuggestions(user);
+socket.emit('sendNewSuggestions', payload)
+return;
+})
+});
+*/
+
+
 
 server.listen(8080);
