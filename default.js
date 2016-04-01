@@ -14,23 +14,24 @@ var submitTweetBtn = document.getElementById('submitTweet');
 var suggestions = document.getElementById('suggestions');
 var myUser = {};
 
-/*var promise = new Promise(function(resolve, reject){
-var xhr = new XMLHttpRequest();
-xhr.open('GET', '/home', true)
-xhr.send();
-xhr.onload = function(){
-if(xhr.status === 200){
-var response = JSON.parse(xhr.responseText);
-resolve(response);
-} else if (xhr.status === 245){
-reject();
-}
-}
+var promise = new Promise(function(resolve, reject){
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/home', true)
+  xhr.send();
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var response = JSON.parse(xhr.responseText);
+      resolve(response);
+    } else if (xhr.status === 245){
+      reject('no cookies');
+    }
+  }
 });
+
 promise.then(function(value){
-myUser = value;
-showDashBoard();
-})*/
+  myUser = value;
+  showDashBoard();
+}, function(reason){});
 
 loginButton.addEventListener('click',function(){
   $('#login').modal('show')
@@ -309,8 +310,6 @@ function updateTimeline(){
   getUserTimeline();
   getSuggestions();
 }
-
-
 
 function removeTimeline(){
   var element = timeline;

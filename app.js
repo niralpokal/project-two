@@ -49,7 +49,7 @@ function Tweet(tweet){
   this.mentions = tweet.mentions;
   this.picture = tweet.picture;
 }
-
+var x;
 var client = new Twitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
@@ -93,6 +93,7 @@ function findUser(db, payload, callback) {
 function insertUser(db, neophite, callback){
   db.collection('users').insertOne(neophite, function(err, result) {
     assert.equal(err, null);
+    x = result;
     callback();
   })
 }
@@ -188,23 +189,25 @@ function checkSuggestions(user){
 
 app.use(express.static('./public/'));
 
-/*app.get('/home', cookieParser(), function(req,res){
+app.get('/home', cookieParser(), function(req,res){
   if(req.cookies.remember == 'true'){
-    findUser(req.cookies, 'cookie');
-    myEvent.on('cookie', function(){
-      for(var i= 0; i< myUsers.length; i++){
-        if( req.cookies.user == myUsers[i]._id && req.cookies.id == myUsers[i].handle){
-          res.json(myUsers[i]);
-          res.end();
+    MongoClient.connect(url, function(err,db){
+      assert.equal(null,err);
+      console.log('I added a new user to the database');
+      findUser(db, req.cookies, function(){
+        db.close();
+        for(var i= 0; i< myUsers.length; i++){
+          if( req.cookies.user == myUsers[i]._id && req.cookies.id == myUsers[i].handle){
+            res.json(myUsers[i]);
+            break;
+          }
         }
-      }
+      })
     })
-  } else{
-    //res.send(245);
-    console.log('no cookies');
+  } else {
+    res.sendStatus(245);
   }
-})
-*/
+});
 
 app.post('/login', jsonParser, function(req, res) {
   var payload = req.body
@@ -299,7 +302,6 @@ app.get('/getFollower', cookieParser(), function(req, res){
   })
 });
 
-
 app.post('/tweet', jsonParser,function(req, res) {
   makeTweet(req.body, 'tweet');
   myEvent.on('tweet', function(){
@@ -317,8 +319,9 @@ app.post('/signup', jsonParser, function(req,res){
     console.log('I added a new user to the database');
     insertUser(db, neophite, function(){
       db.close();
-      res.cookie('user', result._id);
-      res.cookie('id', result.handle);
+      console.log(x);
+      res.cookie('user', x.ops[0]._id);
+      res.cookie('id', neophite.handle);
       res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
       res.json(neophite);
     })
