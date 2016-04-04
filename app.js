@@ -17,6 +17,7 @@ var globalUsers =[]
 var suggestions = [];
 var tweets= [];
 var userNumber = 0;
+var x;
 
 function User(user){
   this.name = user.name;
@@ -36,6 +37,7 @@ function User(user){
   this.numberOfMessages = 0;
   this.picture = "https://abs.twimg.com/sticky/default_profile_images/default_profile_0_200x200.png"
 }
+
 function Tweet(tweet){
   this.name = tweet.name
   this.date = new Date(Date.now);
@@ -49,7 +51,7 @@ function Tweet(tweet){
   this.mentions = tweet.mentions;
   this.picture = tweet.picture;
 }
-var x;
+
 var client = new Twitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
   consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
@@ -107,25 +109,18 @@ function login(res, payload){
   res.json(result);
 }
 
-function makeTweet(tweet, a){
-  var chirp = new Tweet(tweet);
-  var handle = {
-    handle:chirp.handle
+
+function insertTweet(db, payload, callback){
+    var chirp = new Tweet(payload);
+    var handle = {
+      handle:chirp.handle
+    }
+    var myData ={
+      tweets: chirp
+    }
+    db.collection('tweets').update(handle,{ $push: mydata })
+    callback();
   }
-  var myData ={
-    tweets: chirp
-  }
-  var insertTweet = function(db,callback){
-    db.collection('users').update(handle,{ $push: mydata })
-  }
-  MongoClient.connect(url, function(err,db){
-    assert.equal(null,err);
-    console.log('I added a new user to the database');
-    insertTweet(db,function(){
-      db.close();
-      myEvent.emit(a)
-    })
-  })
 };
 
 function findTweets(db, payload, callback) {
@@ -304,10 +299,17 @@ app.get('/getFollower', cookieParser(), function(req, res){
 });
 
 app.post('/tweet', jsonParser,function(req, res) {
-  makeTweet(req.body, 'tweet');
+  var payload  = req.body;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I added a new user to the database');
+    insertTweet(db, payload, function(){
+      db.close();
+      res.sendStatus(200);
+    })
+  })
   myEvent.on('tweet', function(){
-    res.send(req.body);
-    res.end()
+
   })
 });
 
