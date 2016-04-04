@@ -40,7 +40,7 @@ function User(user){
 
 function Tweet(tweet){
   this.name = tweet.name
-  this.date = new Date(Date.now);
+  this.date = Date.now;
   this.text = tweet.text;
   this.handle = tweet.handle;
   this.favs = [];
@@ -50,6 +50,7 @@ function Tweet(tweet){
   this.tags = tweet.tag;
   this.mentions = tweet.mentions;
   this.picture = tweet.picture;
+  this.number = Math.random();
 }
 
 var client = new Twitter({
@@ -110,18 +111,38 @@ function login(res, payload){
 }
 
 
-function insertTweet(db, payload, callback){
-    var chirp = new Tweet(payload);
+function insertTweet(db, chirp, callback){
     var handle = {
       handle:chirp.handle
     }
     var myData ={
       tweets: chirp
     }
-    db.collection('tweets').update(handle,{ $push: mydata })
+    db.collection('tweets').update(handle,{ $push: myData })
     callback();
-  }
 };
+
+function updateTweets(db, chirp, callback){
+  var handle = { handle: chirp.handle };
+  var bulk = db.collection('users').initializeUnorderedBulkOp();
+  bulk.find(handle).update({$inc: {"numberOfTweets":1}})
+  var i =0;
+  while(i < chirp.mentions.length){
+    var handlex = { handle: chirp.mentions[i]};
+    var notification = {
+      tweetNumber: chirp.number,
+      handle: chirp.handle,
+      picture: chirp.picture,
+      text: chirp.text
+    }
+    console.log(handlex);
+    bulk.find(handlex).update({$push: { "notifications": notification }})
+    bulk.find(handlex).update({$inc: { "numberOfNotifications":1 }})
+    i++
+  }
+  bulk.execute();
+  callback();
+}
 
 function findTweets(db, payload, callback) {
   tweets.length = 0;
@@ -298,20 +319,25 @@ app.get('/getFollower', cookieParser(), function(req, res){
   })
 });
 
-app.post('/tweet', jsonParser,function(req, res) {
-  var payload  = req.body;
+app.post('/makeTweet', jsonParser,function(req, res) {
+  var chirp = new Tweet(req.body);
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I added a new user to the database');
-    insertTweet(db, payload, function(){
+    console.log('I added a new tweet to the database');
+    insertTweet(db, chirp, function(){
       db.close();
-      res.sendStatus(200);
     })
   })
-  myEvent.on('tweet', function(){
-
+  MongoClient.connect(url,function(err,db){
+    assert.equal(null,err);
+    console.log('I am updating the tweets for the users');
+    updateTweets(db, chirp, function(){
+      db.close();
+      res.sendStatus(200);
+    } )
   })
 });
+
 
 app.post('/signup', jsonParser, function(req,res){
   var neophite = new User(req.body);

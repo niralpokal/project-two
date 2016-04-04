@@ -316,13 +316,58 @@ function getUpdatedUser(){
   }
 }
 
+function makeTweet() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/makeTweet', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var tweet = tweetBox.value;
+  var mentions = [];
+  var mentions2 = []
+  var tags = [];
+  var split  = tweet.split(/\s\w*/);
+  for(var i = 0; i<split.length; i++){
+    if(split[i].indexOf('@') !== -1){
+      mentions.push(split[i]);
+    } else if(split[i].indexOf('#') !== -1){
+      tags.push(split[i]);
+    }
+  }
+  for(var z =0; z < mentions.length; z++){
+    mentions2.push(mentions[z].split(/\@/));
+    mentions2[z].splice(0,1);
+  }
+  mentions.length = 0;
+  for(var y = 0; y< mentions2.length; y++){
+    mentions.push(mentions2[y][0]);
+  }
+  var myData = {
+    name: myUser.name,
+    text: tweet,
+    handle: myUser.handle,
+    tags: tags,
+    mentions: mentions,
+    picture: myUser.picture
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status ==200){
+      document.getElementById('form3').reset();
+      console.log('yeah');
+    }
+  }
+}
+
 function myTarget(event){
   var ev = event;
   var target = ev.target;
+  var id = target.id
   console.log(target);
   var theTarget = target.dataset.id;
   if (theTarget == 'follow'){
     addFollower(target);
+  }else if(id == 'submitTweet'){
+    makeTweet();
   }
 }
 
