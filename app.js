@@ -39,8 +39,8 @@ function User(user){
 }
 
 function Tweet(tweet){
-  this.name = tweet.name
-  this.date = Date.now;
+  this.name = tweet.name;
+  this.date = new Date;
   this.text = tweet.text;
   this.handle = tweet.handle;
   this.favs = [];
@@ -94,6 +94,31 @@ function findUser(db, payload, callback) {
   });
 }
 
+function findSelectedUser(db, payload, callback){
+  var payload = payload;
+  globalUsers.length = 0;
+  var myData = {
+    handle:payload.handle
+  }
+  var cursor = db.collection('users').find(myData);
+  cursor.each(function(err, doc) {
+    assert.equal(err, null);
+    if (doc != null) {
+      globalUsers.push(doc)
+    } else {
+      callback();
+    }
+  });
+}
+
+function checkUser(user){
+  for (var i = 0; i< globalUsers.length; i++){
+    if(user.handle == globalUsers[i].handle){
+      return globalUsers[i];
+    }
+  }
+}
+
 function insertUser(db, neophite, callback){
   db.collection('users').insertOne(neophite, function(err, result) {
     assert.equal(err, null);
@@ -109,7 +134,6 @@ function login(res, payload){
   res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
   res.json(result);
 }
-
 
 function insertTweet(db, chirp, callback){
     var handle = {
@@ -157,8 +181,9 @@ function findTweets(db, payload, callback) {
   })
 }
 
-function checkFollowingTweets(user){
+function checkFollowingTweets(user, id){
   var payload = []
+  var id =id;
   var user = user;
   for(var i = 0; i<user.length; i++){
     var follow = user[i].handle;
@@ -167,6 +192,12 @@ function checkFollowingTweets(user){
         var a = tweets[y];
         payload.push(a);
       }
+    }
+  }
+  for(var z = 0; z<tweets.length; z++){
+  if(id == tweets[z].handle){
+      var b = tweets[z];
+      payload.push(b)
     }
   }
   return payload;
@@ -247,7 +278,7 @@ app.get('/userTimeline', cookieParser(), function(req, res) {
         console.log('Finding tweets in the database');
         findTweets(db, user, function(){
           db.close();
-          var payload = checkFollowingTweets(user);
+          var payload = checkFollowingTweets(user, req.cookies.id);
           res.json(payload);
         })
       })
@@ -334,10 +365,22 @@ app.post('/makeTweet', jsonParser,function(req, res) {
     updateTweets(db, chirp, function(){
       db.close();
       res.sendStatus(200);
-    } )
+    })
   })
 });
 
+app.post('/getProfile', jsonParser, function(req, res) {
+  var payload = req.body;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am searching for selected user profile');
+    findSelectedUser(db, payload, function(){
+      db.close();
+      var result = checkUser(payload);
+      res.json(result);
+    })
+  })
+});
 
 app.post('/signup', jsonParser, function(req,res){
   var neophite = new User(req.body);
