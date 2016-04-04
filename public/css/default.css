@@ -19,6 +19,18 @@
    color: white;
    position: relative;
    background: transparent;
+   margin-bottom: 16px;
    z-index: 3;
  }
 #loginButton { margin-right: 5px; }
+#signUpButton {margin-right: 5px; }
+#userNavbar{
+  background-color: rgb(2, 117, 216);
+  border-color: rgb(2, 117, 216);
+  margin-bottom: 0;
+}
+#userNavSearch{ padding-top: 7px; }
+#userHome { color: white; }
+#userMoments { color: white; }
+#userNotifications { color: white; }
+#userMessages { color: white; }

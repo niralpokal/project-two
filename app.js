@@ -65,6 +65,7 @@ stream.on('error', function(error) {
 throw error;
 });
 });*/
+
 function checkLogin(check){
   for(var i= 0; i< myUsers.length; i++){
     if( check.id == myUsers[i].handle && check.pass == myUsers[i].pass){

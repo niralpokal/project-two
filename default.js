@@ -66,7 +66,6 @@ loginBtn.addEventListener('click', function(event){
 })
 
 signUpBtn.addEventListener('click', function(event){
-  $('#sign-up').modal('toggle');
   event.preventDefault();
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '/signup', true);
@@ -81,12 +80,13 @@ signUpBtn.addEventListener('click', function(event){
       id:handle,
       pass:pass1,
     }
+    $('#sign-up').modal('toggle');
     var payload = JSON.stringify(myData);
     xhr.send(payload);
   }else{
     console.log('error');
-    pass1.className = 'form-control primary'
-    pass2.className = 'form-control primary'
+    pass1.className = 'form-control has-error'
+    pass2.className = 'form-control has-error'
   }
   xhr.onload = function(){
     if(xhr.status === 200){
@@ -108,31 +108,42 @@ function showDashBoard(){
 function appendUserInfo(){
   var user = myUser;
   var thumbnail = document.createElement('div')
-  thumbnail.className ="thumbnail well"
+  thumbnail.className ="thumbnail"
   var caption = document.createElement('div')
-  caption.className="caption"
+  caption.className="caption text-center"
   var picture = document.createElement('img');
   picture.setAttribute('src', user.picture);
   picture.setAttribute('alt', "Profile Pic")
-  picture.setAttribute('class', "img-rounded")
-  picture.setAttribute('width', "200");
-  picture.setAttribute('height', "200");
+  picture.setAttribute('class', "img-responsive")
   var userName = document.createElement('h1');
+  userName.className ="text-center"
   var userHandle = document.createElement('p');
+  userHandle.className = "text-center"
+  var buttonDiv = document.createElement('div');
+  buttonDiv.className = "row"
+  var column1 = document.createElement('div')
+  column1.className = "col-xs-4";
+  var column2 = document.createElement('div')
+  column2.className = "col-xs-4";
+  var column3 = document.createElement('div')
+  column3.className = "col-xs-4";
   var tweetsBtn = document.createElement('a');
-  tweetsBtn.className = "btn btn-default"
+  tweetsBtn.setAttribute('role', 'button')
   var followersBtn = document.createElement('a');
-  followersBtn.className = "btn btn-default"
+  followersBtn.setAttribute('role', 'button')
   var followingBtn = document.createElement('a');
-  followingBtn.className = "btn btn-default"
-  var userNameText = document.createTextNode(user.name)
+  followingBtn.setAttribute('role', 'button')
+  var userNameText = document.createTextNode(captilizeFirstLetter(user.name));
   var userHandleText = document.createTextNode('@'+user.handle)
   var numOfTweets = document.createTextNode(user.numberOfTweets);
   var numOfFollowers = document.createTextNode(user.numberOfFollowers);
   var numOfFollowing = document.createTextNode(user.numberOfFollowing);
   var tweets = document.createElement('p');
+  tweets.className="text-muted small text-center"
   var followers = document.createElement('p');
+  followers.className ="text-muted small text-center"
   var following = document.createElement('p');
+  following.className="text-muted small text-center"
   var tweetsText = document.createTextNode('Tweets')
   var followingText = document.createTextNode('Following')
   var followersText = document.createTextNode('Followers')
@@ -149,19 +160,19 @@ function appendUserInfo(){
   userHandle.appendChild(userHandleText);
   caption.appendChild(userName);
   caption.appendChild(userHandle);
-  caption.appendChild(tweetsBtn);
-  caption.appendChild(followersBtn);
-  caption.appendChild(followingBtn);
+  column1.appendChild(tweetsBtn);
+  column2.appendChild(followersBtn);
+  column3.appendChild(followingBtn);
+  buttonDiv.appendChild(column1);
+  buttonDiv.appendChild(column2);
+  buttonDiv.appendChild(column3);
+  caption.appendChild(buttonDiv);
   thumbnail.appendChild(picture);
   thumbnail.appendChild(caption);
   userInfo.appendChild(thumbnail);
 }
 
 function getUserTimeline(){
-  //  socket.emit('userTimeline', myData);
-  //socket.on('sendUserTimeline', function(body){
-  //  appendUserTimeline(body);
-  //  })
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/userTimeline', true);
   xhr.send();
@@ -179,6 +190,10 @@ function appendUserTimeline(body){
     var innerTweets = body[i].tweets;
     var img = body[i].picture;
     for(var z = 0; z <innerTweets.length; z++){
+      var panel = document.createElement('div');
+      panel.className = "panel panel-default"
+      var panelBody = document.createElement('div');
+      panelBody.className = "panel-body";
       var media = document.createElement('div');
       media.className = "media";
       var mediaLeft = document.createElement('div');
@@ -204,7 +219,9 @@ function appendUserTimeline(body){
       mediaLeft.appendChild(picture);
       media.appendChild(mediaLeft);
       media.appendChild(mediaBody);
-      timeline.appendChild(media);
+      panelBody.appendChild(media);
+      panel.appendChild(panelBody)
+      timeline.appendChild(panel);
     }
   }
 }
@@ -224,12 +241,17 @@ function getSuggestions(){
 function appendSuggestions(body){
   var users = body;
   for(var i = 0; i<users.length; i++){
+    var panel = document.createElement('div');
+    panel.className = "panel panel-default"
+    var panelBody = document.createElement('div');
+    panelBody.className = "panel-body";
     var media = document.createElement('div');
     media.className = "media";
     var mediaLeft = document.createElement('div');
-    mediaLeft.className = "media-left";
+    mediaLeft.className = "media-left media-middle";
     var mediaBody = document.createElement('div');
     mediaBody.className = "media-body"
+    var hr = document.createElement('hr');
     var picture = document.createElement('img');
     picture.setAttribute('src', users[i].picture);
     picture.setAttribute('alt', "Profile Pic");
@@ -255,7 +277,9 @@ function appendSuggestions(body){
     mediaBody.appendChild(p2);
     media.appendChild(mediaLeft);
     media.appendChild(mediaBody);
-    suggestions.appendChild(media);
+    panelBody.appendChild(media);
+    panel.appendChild(panelBody)
+    suggestions.appendChild(panel);
   }
 }
 
@@ -331,6 +355,10 @@ function removeSuggestions(){
     element.removeChild(element.firstChild);
   }
 }
+
+function captilizeFirstLetter(string){
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
 
 document.body.addEventListener('click', myTarget)
 submitTweetBtn.addEventListener('click', function(){
