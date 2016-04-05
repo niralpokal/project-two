@@ -96,7 +96,7 @@ function findUser(db, payload, callback) {
 
 function findUsers(db, payload, callback){
   globalUsers.length = 0;
-  var cursor = db.collection('users').find();
+  var cursor = db.collection('users').find({},{_id:0,pass:0});
   cursor.each(function(err, doc) {
     assert.equal(err, null);
     if (doc != null) {
@@ -113,7 +113,7 @@ function findSelectedUser(db, payload, callback){
   var myData = {
     handle:payload.handle
   }
-  var cursor = db.collection('users').find(myData);
+  var cursor = db.collection('users').find(myData, {_id:0, pass:0});
   cursor.each(function(err, doc) {
     assert.equal(err, null);
     if (doc != null) {
@@ -218,7 +218,7 @@ function checkFollowingTweets(user, id){
 
 function findSuggestions(db, payload, callback) {
   suggestions.length = 0;
-  var cursor = db.collection('users').find().limit(25);
+  var cursor = db.collection('users').find({}, {_id:0,pass:0}).limit(25);
   cursor.each(function(err, doc) {
     assert.equal(err, null);
     if (doc != null) {
@@ -424,7 +424,7 @@ app.post('/followers', jsonParser, function(req, res){
       for(var i = 0; i<globalUsers.length; i++){
         for(var z = 0; z<payload.length; z++){
           if(payload[z].handle == globalUsers[i].handle){
-              c.push(globalUsers[i]);
+            c.push(globalUsers[i]);
           }
         }
       }
