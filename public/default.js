@@ -213,6 +213,7 @@ function appendUserTimeline(body, dom){
       picture.setAttribute('width', "48");
       picture.setAttribute('height', "48");
       var h5 = document.createElement('h5');
+      h5.setAttribute('data-id', innerTweets[z].handle)
       var p1 = document.createElement('p');
       var p2 = document.createElement('p');
       var handle = document.createTextNode('@' + innerTweets[z].handle)
@@ -539,6 +540,8 @@ function appendFollowers(result){
   removeSelectedTimline();
   removeSelectedSuggestions();
   for(var i = 0; i < result.length; i++){
+    var col = document.createElement('div');
+    col.className="col-xs-6 col-md-4"
     var thumbnail = document.createElement('div')
     thumbnail.className ="thumbnail"
     var caption = document.createElement('div')
@@ -547,20 +550,52 @@ function appendFollowers(result){
     picture.setAttribute('src', result[i].picture);
     picture.setAttribute('alt', "Profile Pic")
     picture.setAttribute('class', "img-rounded")
-    picture.setAttribute('width', 150);
-    picture.setAttribute('height', 150);
+    picture.setAttribute('width', 60);
+    picture.setAttribute('height', 60);
     var br = document.createElement('br');
     var userName = document.createElement('h1');
     userName.className ="text-center";
     var userHandle = document.createElement('p');
+    userName.setAttribute('data-id', result[i].handle)
     userHandle.className = "text-center";
     var userText = document.createElement('p');
     userText.className = "small text-center";
     var userNameText = document.createTextNode(captilizeFirstLetter(result[i].name));
     var userHandleText = document.createTextNode('@'+result[i].handle);
     var userTextNode = document.createTextNode(captilizeFirstLetter(result[i].text));
+    var followingBtn = document.createElement('a');
+    followingBtn.setAttribute('role', 'button')
+    followingBtn.setAttribute('data-id', 'unfollow')
+    var followingText = document.createTextNode('Unfollow');
+    followingText.className="text-muted small text-center";
+    var followBtn = document.createElement('a');
+    followBtn.setAttribute('role', 'button')
+    followBtn.setAttribute('data-id', 'follow')
+    var followText = document.createTextNode('Follow');
+    followText.className="text-muted small text-center";
+    followBtn.appendChild(followText)
+    followingBtn.appendChild(followingText)
+    userName.appendChild(userNameText);
+    userHandle.appendChild(userHandleText);
+    userText.appendChild(userTextNode);
+    caption.appendChild(userName);
+    caption.appendChild(userHandle);
+    caption.appendChild(userText);
+    caption.appendChild(br);
+    caption.appendChild(followBtn);
+    var loop = myUser.following
+    for(var z =0; z< loop.length; z++){
+      if(loop[z].handle == result[i].handle){
+        caption.removeChild(caption.lastChild);
+        caption.appendChild(followingBtn);
+        break;
+      }
+    }
+    thumbnail.appendChild(picture);
+    thumbnail.appendChild(caption);
+    col.appendChild(thumbnail)
+    selectedTimeline.appendChild(col)
   }
-
 }
 
 function appendFollowing(result){
@@ -582,6 +617,7 @@ function appendFollowing(result){
     var userName = document.createElement('h1');
     userName.className ="text-center";
     var userHandle = document.createElement('p');
+    userName.setAttribute('data-id', result[i].handle)
     userHandle.className = "text-center";
     var userText = document.createElement('p');
     userText.className = "small text-center";
@@ -600,8 +636,8 @@ function appendFollowing(result){
     caption.appendChild(userName);
     caption.appendChild(userHandle);
     caption.appendChild(userText);
-    caption.appendChild(br);
     caption.appendChild(followingBtn);
+    caption.appendChild(br);
     thumbnail.appendChild(picture);
     thumbnail.appendChild(caption);
     col.appendChild(thumbnail)

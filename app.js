@@ -433,7 +433,6 @@ app.post('/followers', jsonParser, function(req, res){
   })
 });
 
-
 app.post('/signup', jsonParser, function(req,res){
   var neophite = new User(req.body);
   myUsers.push(neophite);
