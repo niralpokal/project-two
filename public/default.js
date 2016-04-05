@@ -213,6 +213,7 @@ function appendUserTimeline(body, dom){
       picture.setAttribute('class', "img-rounded")
       picture.setAttribute('width', "48");
       picture.setAttribute('height', "48");
+      picture.setAttribute('data-id', 'profile')
       var h5 = document.createElement('h5');
       h5.setAttribute('data-id', innerTweets[z].handle)
       var p1 = document.createElement('p');
@@ -266,6 +267,7 @@ function appendSuggestions(body, dom){
     picture.setAttribute('class', "img-rounded")
     picture.setAttribute('width', "48");
     picture.setAttribute('height', "48");
+    picture.setAttribute('data-id', 'profile')
     var button = document.createElement('button');
     button.className = "btn btn-default"
     button.setAttribute('data-id', 'follow');
@@ -680,6 +682,9 @@ function myTarget(event){
   }else if(theTarget == 'selectFollowers'){
     var data = findNavParent(target);
     getSelectedProfile(data, getFollowers);
+  } else if(theTarget == 'profile') {
+    var data = target.parentNode.nextSibling.getElementsByTagName('h5')[0].dataset.id;
+    getSelectedProfile(data, getSelectedTimeline);
   }
 }
 
