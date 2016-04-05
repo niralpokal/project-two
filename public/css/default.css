@@ -35,3 +35,11 @@
 #userNotifications { color: white; }
 #userMessages { color: white; }
 #submitTweet { margin-top: 3px; }
+#centerNav {
+  text-align: center;
+  background-color: white;
+}
+#selectedNav {
+  display: inline-block;
+  float: none;
+}

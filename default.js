@@ -194,7 +194,6 @@ function getUserTimeline(){
 function appendUserTimeline(body, dom){
   for(var i = 0; i<body.length; i++){
     var innerTweets = body[i].tweets;
-    console.log('hi');
     var img = body[i].picture;
     for(var z = 0; z <innerTweets.length; z++){
       var panel = document.createElement('div');
@@ -229,7 +228,6 @@ function appendUserTimeline(body, dom){
       panelBody.appendChild(media);
       panel.appendChild(panelBody)
       dom.appendChild(panel);
-      console.log('hello');
     }
   }
 }
@@ -366,7 +364,7 @@ function makeTweet() {
   }
 }
 
-function getSelectedProfile(data){
+function getSelectedProfile(data, callback){
   var myData = {
     handle: data
   }
@@ -379,12 +377,12 @@ function getSelectedProfile(data){
     if(xhr.status ===200){
       var result = JSON.parse(xhr.responseText);
       console.log(result);
-      appendSelectedProfile(result);
+      appendSelectedProfile(result, callback);
     }
   }
 };
 
-function appendSelectedProfile(result){
+function appendSelectedProfile(result, callback){
   userProfile.className = 'hidden container-fluid well'
   selectedProfile.className ="container-fluid well"
   var thumbnail = document.createElement('div')
@@ -399,11 +397,14 @@ function appendSelectedProfile(result){
   picture.setAttribute('height', 150);
   var br = document.createElement('br');
   var userName = document.createElement('h1');
-  userName.className ="text-center"
+  userName.className ="text-center";
   var userHandle = document.createElement('p');
-  userHandle.className = "text-center"
+  userHandle.className = "text-center";
+  var userText = document.createElement('p');
+  userText.className = "small text-center";
   var userNameText = document.createTextNode(captilizeFirstLetter(result.name));
   var userHandleText = document.createTextNode('@'+result.handle);
+  var userTextNode = document.createTextNode(captilizeFirstLetter(result.text));
   var buttonDiv = document.createElement('div');
   buttonDiv.className = "row"
   var column1 = document.createElement('div')
@@ -426,8 +427,10 @@ function appendSelectedProfile(result){
   buttonDiv.appendChild(column2);
   userName.appendChild(userNameText);
   userHandle.appendChild(userHandleText);
+  userText.appendChild(userTextNode);
   caption.appendChild(userName);
   caption.appendChild(userHandle);
+  caption.appendChild(userText);
   caption.appendChild(br);
   caption.appendChild(buttonDiv);
   thumbnail.appendChild(picture);
@@ -481,7 +484,7 @@ function appendSelectedProfile(result){
   selectedNav.appendChild(followersLi);
   selectedNav.appendChild(followingLi);
   getSuggestions(userSuggestions);
-  getSelectedTimeline(result);
+  callback(result);
 }
 
 function getSelectedTimeline(result){
@@ -502,9 +505,108 @@ function getSelectedTimeline(result){
   }
 }
 
+function getFollowers(result){
+  var array = result.followers;
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/followers', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var payload = JSON.stringify(array);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status ===200){
+      var answer = JSON.parse(xhr.responseText);
+      appendFollowers(answer);
+    }
+  }
+}
 
-function appendFollowers(){
+function getFollowing(result){
+  var array = result.following;
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/followers', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var payload = JSON.stringify(array);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status ===200){
+      var answer = JSON.parse(xhr.responseText);
+      appendFollowing(answer);
+    }
+  }
+}
 
+function appendFollowers(result){
+  removeSelectedTimline();
+  removeSelectedSuggestions();
+  for(var i = 0; i < result.length; i++){
+    var thumbnail = document.createElement('div')
+    thumbnail.className ="thumbnail"
+    var caption = document.createElement('div')
+    caption.className="caption text-center"
+    var picture = document.createElement('img');
+    picture.setAttribute('src', result[i].picture);
+    picture.setAttribute('alt', "Profile Pic")
+    picture.setAttribute('class', "img-rounded")
+    picture.setAttribute('width', 150);
+    picture.setAttribute('height', 150);
+    var br = document.createElement('br');
+    var userName = document.createElement('h1');
+    userName.className ="text-center";
+    var userHandle = document.createElement('p');
+    userHandle.className = "text-center";
+    var userText = document.createElement('p');
+    userText.className = "small text-center";
+    var userNameText = document.createTextNode(captilizeFirstLetter(result[i].name));
+    var userHandleText = document.createTextNode('@'+result[i].handle);
+    var userTextNode = document.createTextNode(captilizeFirstLetter(result[i].text));
+  }
+
+}
+
+function appendFollowing(result){
+  removeSelectedTimline();
+  for(var i = 0; i < result.length; i++){
+    var col = document.createElement('div');
+    col.className="col-xs-6 col-md-4"
+    var thumbnail = document.createElement('div')
+    thumbnail.className ="thumbnail"
+    var caption = document.createElement('div')
+    caption.className="caption text-center"
+    var picture = document.createElement('img');
+    picture.setAttribute('src', result[i].picture);
+    picture.setAttribute('alt', "Profile Pic")
+    picture.setAttribute('class', "img-rounded")
+    picture.setAttribute('width', 60);
+    picture.setAttribute('height', 60);
+    var br = document.createElement('br');
+    var userName = document.createElement('h1');
+    userName.className ="text-center";
+    var userHandle = document.createElement('p');
+    userHandle.className = "text-center";
+    var userText = document.createElement('p');
+    userText.className = "small text-center";
+    var userNameText = document.createTextNode(captilizeFirstLetter(result[i].name));
+    var userHandleText = document.createTextNode('@'+result[i].handle);
+    var userTextNode = document.createTextNode(captilizeFirstLetter(result[i].text));
+    var followingBtn = document.createElement('a');
+    followingBtn.setAttribute('role', 'button')
+    followingBtn.setAttribute('data-id', 'unfollow')
+    var followingText = document.createTextNode('Unfollow');
+    followingText.className="text-muted small text-center";
+    followingBtn.appendChild(followingText)
+    userName.appendChild(userNameText);
+    userHandle.appendChild(userHandleText);
+    userText.appendChild(userTextNode);
+    caption.appendChild(userName);
+    caption.appendChild(userHandle);
+    caption.appendChild(userText);
+    caption.appendChild(br);
+    caption.appendChild(followingBtn);
+    thumbnail.appendChild(picture);
+    thumbnail.appendChild(caption);
+    col.appendChild(thumbnail)
+    selectedTimeline.appendChild(col)
+  }
 }
 
 function myTarget(event){
@@ -519,13 +621,16 @@ function myTarget(event){
     makeTweet();
   }else if(theTarget == 'userTweets'){
     var data = myUser.handle;
-    getSelectedProfile(data);
+    getSelectedProfile(data, getSelectedTimeline);
   }else if(theTarget == 'userFollowers'){
-
+    var data = myUser.handle;
+    getSelectedProfile(data, getFollowers);
   }else if(theTarget == 'userFollowing'){
-
+    var data = myUser.handle;
+    getSelectedProfile(data, getFollowing);
   }
 }
+
 function updateTimeline(){
   removeTimeline();
   removeUserInfo();
@@ -556,10 +661,34 @@ function removeSuggestions(){
   }
 }
 
+function removeSelectedInfo(){
+  var element = selectedInfo;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+};
+
+function removeSelectedSuggestions(){
+  var element = userSuggestions;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+  var sugg = document.getElementById('suggestionsText');
+  sugg.className = "hidden"
+  element.className="hidden";
+};
+
+
+
+function removeSelectedTimline(){
+  var element = selectedTimeline;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+};
+
 function captilizeFirstLetter(string){
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
 document.body.addEventListener('click', myTarget)
-submitTweetBtn.addEventListener('click', function(){
-})
