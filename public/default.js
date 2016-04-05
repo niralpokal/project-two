@@ -16,6 +16,7 @@ var selectedProfile = document.getElementById('selectedProfile');
 var userProfile = document.getElementById('userProfile')
 var userSuggestions = document.getElementById('userSuggestions')
 var selectedTimeline = document.getElementById('selectedTimeline')
+var selectedNav = document.getElementById('selectedNav');
 var myUser = {};
 
 var promise = new Promise(function(resolve, reject){
@@ -386,6 +387,12 @@ function getSelectedProfile(data, callback){
 function appendSelectedProfile(result, callback){
   userProfile.className = 'hidden container-fluid well'
   selectedProfile.className ="container-fluid well"
+  removeSelectedInfo();
+  removeSelectedTimline();
+  removeSelectedSuggestions();
+  var sugg = document.getElementById('suggestionsText');// make a show function
+  sugg.className = "row text-center"//
+  userSuggestions.className = "";//
   var thumbnail = document.createElement('div')
   thumbnail.className ="thumbnail"
   var caption = document.createElement('div')
@@ -399,6 +406,7 @@ function appendSelectedProfile(result, callback){
   var br = document.createElement('br');
   var userName = document.createElement('h1');
   userName.className ="text-center";
+  userName.setAttribute('data-id', result.handle)
   var userHandle = document.createElement('p');
   userHandle.className = "text-center";
   var userText = document.createElement('p');
@@ -480,7 +488,6 @@ function appendSelectedProfile(result, callback){
   tweetsLi.appendChild(tweetsBtn);
   followersLi.appendChild(followersBtn);
   followingLi.appendChild(followingBtn);
-  var selectedNav = document.getElementById('selectedNav');
   selectedNav.appendChild(tweetsLi);
   selectedNav.appendChild(followersLi);
   selectedNav.appendChild(followingLi);
@@ -664,7 +671,23 @@ function myTarget(event){
   }else if(theTarget == 'userFollowing'){
     var data = myUser.handle;
     getSelectedProfile(data, getFollowing);
+  } else if(theTarget == 'selectTweets'){
+    var data = findNavParent(target);
+    getSelectedProfile(data, getSelectedTimeline);
+  } else if(theTarget == 'selectFollowing'){
+    var data = findNavParent(target);
+    getSelectedProfile(data, getFollowing);
+  }else if(theTarget == 'selectFollowers'){
+    var data = findNavParent(target);
+    getSelectedProfile(data, getFollowers);
   }
+}
+
+function findNavParent(target){
+  var parent = target.parentNode;
+  var theParent = parent.parentNode.parentNode.parentNode.parentNode.previousElementSibling.firstChild.nextSibling.firstChild.getElementsByTagName('h1')[0]
+  var handle = theParent.dataset.id;
+  return handle;
 }
 
 function updateTimeline(){
@@ -701,6 +724,10 @@ function removeSelectedInfo(){
   var element = selectedInfo;
   while(element.firstChild){
     element.removeChild(element.firstChild);
+  }
+  var element2 = selectedNav;
+  while(element2.firstChild){
+    element2.removeChild(element2.firstChild);
   }
 };
 
