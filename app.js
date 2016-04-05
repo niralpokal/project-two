@@ -94,6 +94,19 @@ function findUser(db, payload, callback) {
   });
 }
 
+function findUsers(db, payload, callback){
+  globalUsers.length = 0;
+  var cursor = db.collection('users').find();
+  cursor.each(function(err, doc) {
+    assert.equal(err, null);
+    if (doc != null) {
+      globalUsers.push(doc)
+    } else {
+      callback();
+    }
+  });
+}
+
 function findSelectedUser(db, payload, callback){
   var payload = payload;
   globalUsers.length = 0;
@@ -399,6 +412,27 @@ app.post('/getSelectedTimeline', jsonParser, function(req, res) {
     })
   })
 });
+
+app.post('/followers', jsonParser, function(req, res){
+  var payload  = req.body;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am finding the followers/following for the user');
+    findUsers(db, payload, function(){
+      db.close();
+      var c = [];
+      for(var i = 0; i<globalUsers.length; i++){
+        for(var z = 0; z<payload.length; z++){
+          if(payload[z].handle == globalUsers[i].handle){
+              c.push(globalUsers[i]);
+          }
+        }
+      }
+      res.json(c);
+    })
+  })
+});
+
 
 app.post('/signup', jsonParser, function(req,res){
   var neophite = new User(req.body);
