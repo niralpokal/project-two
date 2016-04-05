@@ -119,8 +119,10 @@ function appendUserInfo(){
   picture.setAttribute('src', user.picture);
   picture.setAttribute('alt', "Profile Pic")
   picture.setAttribute('class', "img-responsive")
+  picture.setAttribute('data-id', 'thumbnailProfile')
   var userName = document.createElement('h1');
   userName.className ="text-center"
+  userName.setAttribute('data-id', myUser.handle)
   var userHandle = document.createElement('p');
   userHandle.className = "text-center"
   var buttonDiv = document.createElement('div');
@@ -380,7 +382,6 @@ function getSelectedProfile(data, callback){
   xhr.onload = function(){
     if(xhr.status ===200){
       var result = JSON.parse(xhr.responseText);
-      console.log(result);
       appendSelectedProfile(result, callback);
     }
   }
@@ -392,9 +393,7 @@ function appendSelectedProfile(result, callback){
   removeSelectedInfo();
   removeSelectedTimline();
   removeSelectedSuggestions();
-  var sugg = document.getElementById('suggestionsText');// make a show function
-  sugg.className = "row text-center"//
-  userSuggestions.className = "";//
+  showSelctedSuggestions();
   var thumbnail = document.createElement('div')
   thumbnail.className ="thumbnail"
   var caption = document.createElement('div')
@@ -405,6 +404,7 @@ function appendSelectedProfile(result, callback){
   picture.setAttribute('class', "img-rounded")
   picture.setAttribute('width', 150);
   picture.setAttribute('height', 150);
+  picture.setAttribute('data-id', 'thumbnailProfile')
   var br = document.createElement('br');
   var userName = document.createElement('h1');
   userName.className ="text-center";
@@ -509,7 +509,6 @@ function getSelectedTimeline(result){
   xhr.onload = function(){
     if(xhr.status === 200){
       var body = JSON.parse(xhr.responseText);
-      console.log(body.length);
       appendUserTimeline(body, selectedTimeline);
     }
   }
@@ -561,6 +560,7 @@ function appendFollowers(result){
     picture.setAttribute('class', "img-rounded")
     picture.setAttribute('width', 60);
     picture.setAttribute('height', 60);
+    picture.setAttribute('data-id', 'thumbnailProfile')
     var br = document.createElement('br');
     var userName = document.createElement('h1');
     userName.className ="text-center";
@@ -609,6 +609,8 @@ function appendFollowers(result){
 
 function appendFollowing(result){
   removeSelectedTimline();
+  removeSelectedSuggestions();
+  showSelctedSuggestions();
   for(var i = 0; i < result.length; i++){
     var col = document.createElement('div');
     col.className="col-xs-6 col-md-4"
@@ -622,6 +624,7 @@ function appendFollowing(result){
     picture.setAttribute('class', "img-rounded")
     picture.setAttribute('width', 60);
     picture.setAttribute('height', 60);
+    picture.setAttribute('data-id', 'thumbnailProfile');
     var br = document.createElement('br');
     var userName = document.createElement('h1');
     userName.className ="text-center";
@@ -685,6 +688,14 @@ function myTarget(event){
   } else if(theTarget == 'profile') {
     var data = target.parentNode.nextSibling.getElementsByTagName('h5')[0].dataset.id;
     getSelectedProfile(data, getSelectedTimeline);
+  }else if(theTarget == 'thumbnailProfile') {
+    var data = target.nextSibling.firstChild.dataset.id;
+    getSelectedProfile(data, getSelectedTimeline);
+  } else if(id == 'userHome'){
+    removeSelectedInfo();
+    removeSelectedTimline();
+    removeSelectedSuggestions();
+    getUpdatedUser();
   }
 }
 
@@ -696,12 +707,20 @@ function findNavParent(target){
 }
 
 function updateTimeline(){
+  userProfile.className = 'container-fluid well'
+  selectedProfile.className ="hidden container-fluid well"
   removeTimeline();
   removeUserInfo();
   removeSuggestions();
   appendUserInfo();
   getUserTimeline();
   getSuggestions(suggestions);
+}
+
+function showSelctedSuggestions(){
+  var sugg = document.getElementById('suggestionsText');
+  sugg.className = "row text-center"
+  userSuggestions.className = "";
 }
 
 function removeTimeline(){
@@ -745,8 +764,6 @@ function removeSelectedSuggestions(){
   sugg.className = "hidden"
   element.className="hidden";
 };
-
-
 
 function removeSelectedTimline(){
   var element = selectedTimeline;
