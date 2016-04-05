@@ -12,6 +12,8 @@ var timeline = document.getElementById('timeline');
 var tweetBox = document.getElementById('tweetBox');
 var submitTweetBtn = document.getElementById('submitTweet');
 var suggestions = document.getElementById('suggestions');
+var selectedProfile = document.getElementById('selectedProfile');
+var userProfile = document.getElementById('userProfile')
 var myUser = {};
 
 var promise = new Promise(function(resolve, reject){
@@ -54,7 +56,6 @@ loginBtn.addEventListener('click', function(event){
     pass:pass
   }
   var payload = JSON.stringify(myData);
-  console.log(payload);
   xhr.send(payload);
   xhr.onload = function(){
     if (xhr.status === 200){
@@ -129,10 +130,13 @@ function appendUserInfo(){
   column3.className = "col-xs-4";
   var tweetsBtn = document.createElement('a');
   tweetsBtn.setAttribute('role', 'button')
+  tweetsBtn.setAttribute('data-id', 'userTweets')
   var followersBtn = document.createElement('a');
   followersBtn.setAttribute('role', 'button')
+  followersBtn.setAttribute('data-id', 'userFollowers')
   var followingBtn = document.createElement('a');
   followingBtn.setAttribute('role', 'button')
+  followingBtn.setAttribute('data-id', 'userFollowing')
   var userNameText = document.createTextNode(captilizeFirstLetter(user.name));
   var userHandleText = document.createTextNode('@'+user.handle)
   var numOfTweets = document.createTextNode(user.numberOfTweets);
@@ -337,7 +341,7 @@ function makeTweet() {
     mentions2[z].splice(0,1);
   }
   mentions.length = 0;
-  for(var y = 0; y< mentions2.length; y++){
+  for(var y = 0; y < mentions2.length; y++){
     mentions.push(mentions2[y][0]);
   }
   var myData = {
@@ -353,9 +357,135 @@ function makeTweet() {
   xhr.onload = function(){
     if(xhr.status ==200){
       document.getElementById('form3').reset();
-      console.log('yeah');
+      getUpdatedUser();
     }
   }
+}
+
+function getSelectedProfile(data){
+  var myData = {
+    handle: data
+  }
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/getProfile', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status ===200){
+      var result = JSON.parse(xhr.responseText);
+      console.log(result);
+      appendSelectedProfile(result);
+    }
+  }
+};
+
+function appendSelectedProfile(result){
+  userProfile.className = 'hidden container-fluid well'
+  selectedProfile.className ="container-fluid well"
+  var thumbnail = document.createElement('div')
+  thumbnail.className ="thumbnail"
+  var caption = document.createElement('div')
+  caption.className="caption text-center"
+  var picture = document.createElement('img');
+  picture.setAttribute('src', result.picture);
+  picture.setAttribute('alt', "Profile Pic")
+  picture.setAttribute('class', "img-rounded")
+  picture.setAttribute('width', 150);
+  picture.setAttribute('height', 150);
+  var br = document.createElement('br');
+  var userName = document.createElement('h1');
+  userName.className ="text-center"
+  var userHandle = document.createElement('p');
+  userHandle.className = "text-center"
+  var userNameText = document.createTextNode(captilizeFirstLetter(result.name));
+  var userHandleText = document.createTextNode('@'+result.handle);
+  var buttonDiv = document.createElement('div');
+  buttonDiv.className = "row"
+  var column1 = document.createElement('div')
+  column1.className = "col-xs-6";
+  var column2 = document.createElement('div')
+  column2.className = "col-xs-6";
+  var tweetBtn = document.createElement('a');
+  tweetBtn.setAttribute('role', 'button')
+  tweetBtn.setAttribute('data-id', 'tweet')
+  var messageBtn = document.createElement('a');
+  messageBtn.setAttribute('role', 'button')
+  messageBtn.setAttribute('data-id', 'message')
+  var tweetBtnText = document.createTextNode('Tweet');
+  var messageBtnText = document.createTextNode('Message');
+  tweetBtn.appendChild(tweetBtnText);
+  messageBtn.appendChild(messageBtnText);
+  column1.appendChild(tweetBtn);
+  column2.appendChild(messageBtn);
+  buttonDiv.appendChild(column1);
+  buttonDiv.appendChild(column2);
+  userName.appendChild(userNameText);
+  userHandle.appendChild(userHandleText);
+  caption.appendChild(userName);
+  caption.appendChild(userHandle);
+  caption.appendChild(br);
+  caption.appendChild(buttonDiv);
+  thumbnail.appendChild(picture);
+  thumbnail.appendChild(caption);
+  var selectedInfo = document.getElementById('selectedInfo');
+  selectedInfo.appendChild(thumbnail);
+  var tweetsLi = document.createElement('li')
+  tweetsLi.setAttribute('role', 'presentation')
+  var followersLi = document.createElement('li')
+  followersLi.setAttribute('role', 'presentation')
+  var followingLi = document.createElement('li')
+  followingLi.setAttribute('role', 'presentation')
+  var tweetsBtn = document.createElement('a');
+  tweetsBtn.setAttribute('role', 'button')
+  tweetsBtn.setAttribute('data-id', 'selectTweets')
+  var followersBtn = document.createElement('a');
+  followersBtn.setAttribute('role', 'button')
+  followersBtn.setAttribute('data-id', 'selectFollowers')
+  var followingBtn = document.createElement('a');
+  followingBtn.setAttribute('role', 'button')
+  followingBtn.setAttribute('data-id', 'selectFollowing')
+  followersLi.className=""
+  followingLi.className=""
+  tweetsLi.className=""
+  var tweets = document.createElement('p');
+  tweets.className="text-muted small text-center"
+  var followers = document.createElement('p');
+  followers.className ="text-muted small text-center"
+  var following = document.createElement('p');
+  following.className="text-muted small text-center"
+  var tweetsText = document.createTextNode('Tweets')
+  var followingText = document.createTextNode('Following')
+  var followersText = document.createTextNode('Followers')
+  var numOfTweets = document.createTextNode(result.numberOfTweets);
+  var numOfFollowers = document.createTextNode(result.numberOfFollowers);
+  var numOfFollowing = document.createTextNode(result.numberOfFollowing);
+  tweets.appendChild(tweetsText);
+  followers.appendChild(followersText);
+  following.appendChild(followingText);
+  tweetsBtn.appendChild(tweets);
+  tweetsBtn.appendChild(numOfTweets);
+  followersBtn.appendChild(followers);
+  followersBtn.appendChild(numOfFollowers);
+  followingBtn.appendChild(following);
+  followingBtn.appendChild(numOfFollowing);
+  tweetsLi.appendChild(tweetsBtn);
+  followersLi.appendChild(followersBtn);
+  followingLi.appendChild(followingBtn);
+  var selectedNav = document.getElementById('selectedNav');
+  selectedNav.appendChild(tweetsLi);
+  selectedNav.appendChild(followersLi);
+  selectedNav.appendChild(followingLi);
+}
+function getSelectedTimeline(){
+
+}
+function appendSelectedTimeline(result){
+
+}
+
+function appendFollowers(){
+
 }
 
 function myTarget(event){
@@ -368,9 +498,15 @@ function myTarget(event){
     addFollower(target);
   }else if(id == 'submitTweet'){
     makeTweet();
+  }else if(theTarget == 'userTweets'){
+    var data = myUser.handle;
+    getSelectedProfile(data);
+  }else if(theTarget == 'userFollowers'){
+
+  }else if(theTarget == 'userFollowing'){
+
   }
 }
-
 function updateTimeline(){
   removeTimeline();
   removeUserInfo();
