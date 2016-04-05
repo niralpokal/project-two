@@ -382,6 +382,24 @@ app.post('/getProfile', jsonParser, function(req, res) {
   })
 });
 
+app.post('/getSelectedTimeline', jsonParser, function(req, res) {
+  var payload = req.body;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    findTweets(db,payload, function(){
+      db.close();
+      for(var i =0; i<tweets.length; i++){
+        if(payload.handle == tweets[i].handle){
+          var c = [];
+          c.push(tweets[i]);
+          res.json(c);
+          break;
+        }
+      }
+    })
+  })
+});
+
 app.post('/signup', jsonParser, function(req,res){
   var neophite = new User(req.body);
   myUsers.push(neophite);

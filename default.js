@@ -14,6 +14,8 @@ var submitTweetBtn = document.getElementById('submitTweet');
 var suggestions = document.getElementById('suggestions');
 var selectedProfile = document.getElementById('selectedProfile');
 var userProfile = document.getElementById('userProfile')
+var userSuggestions = document.getElementById('userSuggestions')
+var selectedTimeline = document.getElementById('selectedTimeline')
 var myUser = {};
 
 var promise = new Promise(function(resolve, reject){
@@ -103,7 +105,7 @@ function showDashBoard(){
   dashboard.className = "row-fluid"
   appendUserInfo();
   getUserTimeline();
-  getSuggestions();
+  getSuggestions(suggestions);
 }
 
 function appendUserInfo(){
@@ -184,14 +186,15 @@ function getUserTimeline(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
       var followingTweets = _.sortBy(response, 'date');
-      appendUserTimeline(followingTweets);
+      appendUserTimeline(followingTweets, timeline);
     }
   }
 };
 
-function appendUserTimeline(body){
+function appendUserTimeline(body, dom){
   for(var i = 0; i<body.length; i++){
     var innerTweets = body[i].tweets;
+    console.log('hi');
     var img = body[i].picture;
     for(var z = 0; z <innerTweets.length; z++){
       var panel = document.createElement('div');
@@ -225,24 +228,25 @@ function appendUserTimeline(body){
       media.appendChild(mediaBody);
       panelBody.appendChild(media);
       panel.appendChild(panelBody)
-      timeline.appendChild(panel);
+      dom.appendChild(panel);
+      console.log('hello');
     }
   }
 }
 
-function getSuggestions(){
+function getSuggestions(dom){
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/suggestions', true);
   xhr.send();
   xhr.onload = function(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
-      appendSuggestions(response);
+      appendSuggestions(response, dom);
     }
   }
 }
 
-function appendSuggestions(body){
+function appendSuggestions(body, dom){
   var users = body;
   for(var i = 0; i<users.length; i++){
     var panel = document.createElement('div');
@@ -283,7 +287,7 @@ function appendSuggestions(body){
     media.appendChild(mediaBody);
     panelBody.appendChild(media);
     panel.appendChild(panelBody)
-    suggestions.appendChild(panel);
+    dom.appendChild(panel);
   }
 }
 
@@ -476,13 +480,28 @@ function appendSelectedProfile(result){
   selectedNav.appendChild(tweetsLi);
   selectedNav.appendChild(followersLi);
   selectedNav.appendChild(followingLi);
+  getSuggestions(userSuggestions);
+  getSelectedTimeline(result);
 }
-function getSelectedTimeline(){
 
+function getSelectedTimeline(result){
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/getSelectedTimeline', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var myData = {
+  handle: result.handle
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var body = JSON.parse(xhr.responseText);
+      console.log(body.length);
+      appendUserTimeline(body, selectedTimeline);
+    }
+  }
 }
-function appendSelectedTimeline(result){
 
-}
 
 function appendFollowers(){
 
@@ -513,7 +532,7 @@ function updateTimeline(){
   removeSuggestions();
   appendUserInfo();
   getUserTimeline();
-  getSuggestions();
+  getSuggestions(suggestions);
 }
 
 function removeTimeline(){
