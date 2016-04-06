@@ -226,9 +226,15 @@ function appendUserTimeline(body, dom){
       var tweet = document.createTextNode(innerTweets[z].text);
       var favIcon = document.createElement('i');
       favIcon.className ="fa fa-heart-o";
+      favIcon.setAttribute('data-id', 'addfavorite');
+      for(var y = 0; y < myUser.favs.length; y++){
+        if (myUser.favs[y].number == innerTweets[z].number){
+          favIcon.className="fa fa-heart";
+          favIcon.setAttribute('data-id', 'unfavorite')
+        }
+      }
       var fav = document.createElement('p');
       fav.setAttribute('role', 'button');
-      favIcon.setAttribute('data-id', 'addfavorite');
       var numberOfFavsp = document.createElement('a');
       var numberOfFavs = document.createTextNode(' ' +innerTweets[z].numberOfFavs);
       numberOfFavsp.setAttribute('data-id', 'getfavorites' )
@@ -602,7 +608,7 @@ function getFollowing(result){
 function getFavs(result){
   var array = result.favs;
   var xhr = new XMLHttpRequest();
-  xhr.open('POST', '/followers', true);
+  xhr.open('POST', '/favs', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   var payload = JSON.stringify(array);
   xhr.send(payload);
@@ -764,10 +770,27 @@ function appendFavs(body){
       h5.setAttribute('data-id', innerTweets[z].handle)
       var p1 = document.createElement('p');
       var p2 = document.createElement('p');
+      p2.setAttribute('data-id', innerTweets[z].number)
+      p2.setAttribute('data-tweet', innerTweets[z].text)
       var handle = document.createTextNode('@' + innerTweets[z].handle)
-      var name  = document.createTextNode('');
-      var tweet = document.createTextNode(innerTweets[z].text)
+      var tweet = document.createTextNode(innerTweets[z].text);
+      var favIcon = document.createElement('i');
+      favIcon.className ="fa fa-heart";
+      favIcon.setAttribute('data-id', 'unfavorite');
+      var fav = document.createElement('p');
+      fav.setAttribute('role', 'button');
+      var numberOfFavsp = document.createElement('a');
+      var numberOfFavs = document.createTextNode(' ' +innerTweets[z].numberOfFavs);
+      numberOfFavsp.setAttribute('data-id', 'getfavorites' )
+      var br = document.createElement('br');
+      var br2 = document.createElement('br');
+      numberOfFavsp.appendChild(numberOfFavs)
+      fav.appendChild(favIcon);
+      fav.appendChild(numberOfFavsp);
       p2.appendChild(tweet);
+      p2.appendChild(br)
+      p2.appendChild(br2);
+      p2.appendChild(fav)
       h5.appendChild(handle);
       mediaBody.appendChild(h5);
       mediaBody.appendChild(p2);
@@ -775,7 +798,7 @@ function appendFavs(body){
       media.appendChild(mediaLeft);
       media.appendChild(mediaBody);
       panelBody.appendChild(media);
-      panel.appendChild(panelBody)
+      panel.appendChild(panelBody);
       selectedTimeline.appendChild(panel);
     }
   }
@@ -822,6 +845,9 @@ function myTarget(event){
     getUpdatedUser();
   } else if(theTarget == 'addfavorite'){
     addFavorite(target);
+  } else if(theTarget == 'selectFavs'){
+    var data = findNavParent(target);
+    getSelectedProfile(data, getFavs);
   }
 }
 

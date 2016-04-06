@@ -511,11 +511,17 @@ app.post('/favs',jsonParser, function(req, res) {
       for(var i = 0; i<tweets.length; i++){
         for(var z = 0; z<payload.length; z++){
           if(payload[z].handle == tweets[i].handle){
-            for( var y = 0; y< tweet[i].tweets.length; y++){
+            var a ={
+              handle:tweets[i].handle,
+              tweets:[],
+              picture: tweets[i].picture
+            }
+            for( var y = 0; y< tweets[i].tweets.length; y++){
               if(payload[z].number == tweets[i].tweets[y].number){
-                c.push(tweets[i]);
+                a.tweets.push(tweets[i].tweets[y]);
               }
             }
+            c.push(a)
           }
         }
       }
