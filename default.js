@@ -600,6 +600,9 @@ function appendFollowers(result){
         break;
       }
     }
+    if(myUser.handle == result[i].handle){
+      caption.removeChild(caption.lastChild);
+    }
     thumbnail.appendChild(picture);
     thumbnail.appendChild(caption);
     col.appendChild(thumbnail)
@@ -649,6 +652,9 @@ function appendFollowing(result){
     caption.appendChild(userHandle);
     caption.appendChild(userText);
     caption.appendChild(followingBtn);
+    if(myUser.handle == result[i].handle){
+        caption.removeChild(caption.lastChild);
+      }
     caption.appendChild(br);
     thumbnail.appendChild(picture);
     thumbnail.appendChild(caption);

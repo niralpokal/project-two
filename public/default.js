@@ -382,7 +382,6 @@ function getSelectedProfile(data, callback){
   xhr.onload = function(){
     if(xhr.status ===200){
       var result = JSON.parse(xhr.responseText);
-      console.log(result);
       appendSelectedProfile(result, callback);
     }
   }
@@ -510,7 +509,6 @@ function getSelectedTimeline(result){
   xhr.onload = function(){
     if(xhr.status === 200){
       var body = JSON.parse(xhr.responseText);
-      console.log(body.length);
       appendUserTimeline(body, selectedTimeline);
     }
   }
@@ -602,6 +600,9 @@ function appendFollowers(result){
         break;
       }
     }
+    if(myUser.handle == result[i].handle){
+      caption.removeChild(caption.lastChild);
+    }
     thumbnail.appendChild(picture);
     thumbnail.appendChild(caption);
     col.appendChild(thumbnail)
@@ -651,6 +652,9 @@ function appendFollowing(result){
     caption.appendChild(userHandle);
     caption.appendChild(userText);
     caption.appendChild(followingBtn);
+    if(myUser.handle == result[i].handle){
+        caption.removeChild(caption.lastChild);
+      }
     caption.appendChild(br);
     thumbnail.appendChild(picture);
     thumbnail.appendChild(caption);
