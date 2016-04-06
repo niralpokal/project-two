@@ -220,6 +220,8 @@ function appendUserTimeline(body, dom){
       h5.setAttribute('data-id', innerTweets[z].handle)
       var p1 = document.createElement('p');
       var p2 = document.createElement('p');
+      p2.setAttribute('data-id', innerTweets[z].number)
+      p2.setAttribute('data-tweet', innerTweets[z].text)
       var handle = document.createTextNode('@' + innerTweets[z].handle)
       var tweet = document.createTextNode(innerTweets[z].text);
       var favIcon = document.createElement('i');
@@ -328,6 +330,28 @@ function addFollower(target){
       getUpdatedUser();
     }
   }
+}
+
+function addFavorite(target){
+  target.className = "fa fa-heart"
+  target.setAttribute('data-id', 'unfavorite')
+  var tweetNumber = target.parentNode.parentNode.dataset.id
+  var tweetText = target.parentNode.parentNode.dataset.tweet
+  var tweetHandle = target.parentNode.parentNode.parentNode.firstChild.dataset.id;
+  var number = target.parentNode.lastChild.textContent;
+  target.parentNode.lastChild.textContent = (" " + (~~number +1));
+  var myData = {
+    userHandle: myUser.handle,
+    tweetHandle: tweetHandle,
+    tweetNumber: tweetNumber,
+    tweetText: tweetText,
+    userPic: myUser.picture
+  }
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'addfav', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
 }
 
 function getUpdatedUser(){
@@ -574,6 +598,7 @@ function getFollowing(result){
     }
   }
 }
+
 function getFavs(result){
   var array = result.favs;
   var xhr = new XMLHttpRequest();
@@ -795,6 +820,8 @@ function myTarget(event){
     removeSelectedTimline();
     removeSelectedSuggestions();
     getUpdatedUser();
+  } else if(theTarget == 'addfavorite'){
+    addFavorite(target);
   }
 }
 
