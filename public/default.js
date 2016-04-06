@@ -221,9 +221,24 @@ function appendUserTimeline(body, dom){
       var p1 = document.createElement('p');
       var p2 = document.createElement('p');
       var handle = document.createTextNode('@' + innerTweets[z].handle)
-      var name  = document.createTextNode('');
-      var tweet = document.createTextNode(innerTweets[z].text)
+      var tweet = document.createTextNode(innerTweets[z].text);
+      var favIcon = document.createElement('i');
+      favIcon.className ="fa fa-heart-o";
+      var fav = document.createElement('p');
+      fav.setAttribute('role', 'button');
+      favIcon.setAttribute('data-id', 'addfavorite');
+      var numberOfFavsp = document.createElement('a');
+      var numberOfFavs = document.createTextNode(' ' +innerTweets[z].numberOfFavs);
+      numberOfFavsp.setAttribute('data-id', 'getfavorites' )
+      var br = document.createElement('br');
+      var br2 = document.createElement('br');
+      numberOfFavsp.appendChild(numberOfFavs)
+      fav.appendChild(favIcon);
+      fav.appendChild(numberOfFavsp);
       p2.appendChild(tweet);
+      p2.appendChild(br)
+      p2.appendChild(br2);
+      p2.appendChild(fav)
       h5.appendChild(handle);
       mediaBody.appendChild(h5);
       mediaBody.appendChild(p2);
@@ -463,6 +478,11 @@ function appendSelectedProfile(result, callback){
   var followingBtn = document.createElement('a');
   followingBtn.setAttribute('role', 'button')
   followingBtn.setAttribute('data-id', 'selectFollowing')
+  var favsLi = document.createElement('li');
+  favsLi.setAttribute('role', 'presentation');
+  var favsBtn = document.createElement('a');
+  favsBtn.setAttribute('role', 'button');
+  favsBtn.setAttribute('data-id', 'selectFavs');
   followersLi.className=""
   followingLi.className=""
   tweetsLi.className=""
@@ -473,11 +493,16 @@ function appendSelectedProfile(result, callback){
   var following = document.createElement('p');
   following.className="text-muted small text-center"
   var tweetsText = document.createTextNode('Tweets')
+  var favs = document.createElement('p');
+  favs.className = "text-muted text-center small";
+  var favsText = document.createTextNode('Favs');
+  var numOfFavs = document.createTextNode(result.numberOfFavs);
   var followingText = document.createTextNode('Following')
   var followersText = document.createTextNode('Followers')
   var numOfTweets = document.createTextNode(result.numberOfTweets);
   var numOfFollowers = document.createTextNode(result.numberOfFollowers);
   var numOfFollowing = document.createTextNode(result.numberOfFollowing);
+  favs.appendChild(favsText);
   tweets.appendChild(tweetsText);
   followers.appendChild(followersText);
   following.appendChild(followingText);
@@ -487,12 +512,18 @@ function appendSelectedProfile(result, callback){
   followersBtn.appendChild(numOfFollowers);
   followingBtn.appendChild(following);
   followingBtn.appendChild(numOfFollowing);
+  favsBtn.appendChild(favs);
+  favsBtn.appendChild(numOfFavs);
   tweetsLi.appendChild(tweetsBtn);
   followersLi.appendChild(followersBtn);
   followingLi.appendChild(followingBtn);
+  favsLi.appendChild(favsBtn);
   selectedNav.appendChild(tweetsLi);
   selectedNav.appendChild(followersLi);
   selectedNav.appendChild(followingLi);
+  selectedNav.appendChild(favsLi);
+  removeSelectedSuggestions();
+  showSelctedSuggestions();
   getSuggestions(userSuggestions);
   callback(result);
 }
@@ -540,6 +571,20 @@ function getFollowing(result){
     if(xhr.status ===200){
       var answer = JSON.parse(xhr.responseText);
       appendFollowing(answer);
+    }
+  }
+}
+function getFavs(result){
+  var array = result.favs;
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/followers', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var payload = JSON.stringify(array);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status ===200){
+      var answer = JSON.parse(xhr.responseText);
+      appendFavs(answer);
     }
   }
 }
@@ -614,6 +659,7 @@ function appendFollowing(result){
   removeSelectedTimline();
   removeSelectedSuggestions();
   showSelctedSuggestions();
+  getSuggestions(userSuggestions);
   for(var i = 0; i < result.length; i++){
     var col = document.createElement('div');
     col.className="col-xs-6 col-md-4"
@@ -660,6 +706,53 @@ function appendFollowing(result){
     thumbnail.appendChild(caption);
     col.appendChild(thumbnail)
     selectedTimeline.appendChild(col)
+  }
+}
+
+function appendFavs(body){
+  removeSelectedTimline();
+  removeSelectedSuggestions();
+  showSelctedSuggestions();
+  getSuggestions(userSuggestions);
+  for(var i = 0; i<body.length; i++){
+    var innerTweets = body[i].tweets;
+    var img = body[i].picture;
+    for(var z = 0; z <innerTweets.length; z++){
+      var panel = document.createElement('div');
+      panel.className = "panel panel-default"
+      var panelBody = document.createElement('div');
+      panelBody.className = "panel-body";
+      var media = document.createElement('div');
+      media.className = "media";
+      var mediaLeft = document.createElement('div');
+      mediaLeft.className = "media-left";
+      var mediaBody = document.createElement('div');
+      mediaBody.className = "media-body"
+      var picture = document.createElement('img')
+      picture.setAttribute('src', img);
+      picture.setAttribute('alt', "Profile Pic");
+      picture.setAttribute('class', "img-rounded")
+      picture.setAttribute('width', "48");
+      picture.setAttribute('height', "48");
+      picture.setAttribute('data-id', 'profile')
+      var h5 = document.createElement('h5');
+      h5.setAttribute('data-id', innerTweets[z].handle)
+      var p1 = document.createElement('p');
+      var p2 = document.createElement('p');
+      var handle = document.createTextNode('@' + innerTweets[z].handle)
+      var name  = document.createTextNode('');
+      var tweet = document.createTextNode(innerTweets[z].text)
+      p2.appendChild(tweet);
+      h5.appendChild(handle);
+      mediaBody.appendChild(h5);
+      mediaBody.appendChild(p2);
+      mediaLeft.appendChild(picture);
+      media.appendChild(mediaLeft);
+      media.appendChild(mediaBody);
+      panelBody.appendChild(media);
+      panel.appendChild(panelBody)
+      selectedTimeline.appendChild(panel);
+    }
   }
 }
 
