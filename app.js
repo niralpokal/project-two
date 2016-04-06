@@ -290,6 +290,35 @@ function addFavorite(db,payload,callback){
   bulk.execute();
 }
 
+function removeFavorite(db,payload,callback){
+  var userHandle = {
+    handle:payload.userHandle
+  }
+  var tweetHandle = {
+    handle:payload.tweetHandle
+  }
+  var favs = {
+    favs: {
+      handle: payload.tweetHandle,
+      number: payload.tweetNumber
+    }
+  }
+  var notification = {
+    notifications:{
+      tweetNumber:payload.tweetNumber,
+      handle:payload.userHandle,
+      text:payload.tweetText,
+      picture: payload.userPic
+    }
+  }
+  var bulk = db.collection('users').initializeUnorderedBulkOp();
+  bulk.find(userHandle).update({ $pull: favs });
+  bulk.find(userHandle).update({$inc:{"numberOfFavs" : -1}});
+  bulk.find(tweetHandle).update({ $pull: notification });
+  bulk.find(tweetHandle).update({ $inc: {"numberOfNotifications": -1}});
+  bulk.execute();
+}
+
 app.use(express.static('./public/'));
 
 app.get('/home', cookieParser(), function(req,res){
@@ -549,8 +578,30 @@ app.post('/addfav', jsonParser, function(req, res) {
     bulk.find({"handle":payload.tweetHandle, 'tweets.number': ~~payload.tweetNumber}).update({$push: {"tweets.$.favs": userHandle}});
     bulk.find({"handle":payload.tweetHandle,
     'tweets.number': ~~payload.tweetNumber}).update({$inc:{"tweets.$.numberOfFavs" : 1}});
-    console.log({"handle":payload.tweetHandle,
-    'tweets.number': ~~payload.tweetNumber});
+    bulk.execute();
+    db.close();
+  })
+});
+
+app.post('/removefav', jsonParser, function(req, res) {
+  var payload = req.body;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am removing favorites to a person');
+    removeFavorite(db, payload, function(){
+      db.close();
+    })
+  })
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am updating tweets with the favorites');
+    var userHandle = {
+      handle:payload.userHandle
+    }
+    var bulk = db.collection('tweets').initializeUnorderedBulkOp();
+    bulk.find({"handle":payload.tweetHandle, 'tweets.number': ~~payload.tweetNumber}).update({$pull: {"tweets.$.favs": userHandle}});
+    bulk.find({"handle":payload.tweetHandle,
+    'tweets.number': ~~payload.tweetNumber}).update({$inc:{"tweets.$.numberOfFavs" : -1}});
     bulk.execute();
     db.close();
   })

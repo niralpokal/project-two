@@ -359,6 +359,29 @@ function addFavorite(target){
   var payload = JSON.stringify(myData);
   xhr.send(payload);
 }
+function unFavorite(target){
+  target.className = "fa fa-heart-o"
+  target.setAttribute('data-id', 'addfavorite')
+  var tweetNumber = target.parentNode.parentNode.dataset.id
+  var tweetText = target.parentNode.parentNode.dataset.tweet
+  var tweetHandle = target.parentNode.parentNode.parentNode.firstChild.dataset.id;
+  var number = target.parentNode.lastChild.textContent;
+  target.parentNode.lastChild.textContent = (" " + (~~number -1));
+  var myData = {
+    userHandle: myUser.handle,
+    tweetHandle: tweetHandle,
+    tweetNumber: tweetNumber,
+    tweetText: tweetText,
+    userPic: myUser.picture
+  }
+  console.log(myData);
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'removefav', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+}
+
 
 function getUpdatedUser(){
   var xhr = new XMLHttpRequest();
@@ -615,7 +638,6 @@ function getFavs(result){
   xhr.onload = function(){
     if(xhr.status ===200){
       var answer = JSON.parse(xhr.responseText);
-      console.log(answer);
       appendFavs(answer);
     }
   }
@@ -849,6 +871,8 @@ function myTarget(event){
   } else if(theTarget == 'selectFavs'){
     var data = findNavParent(target);
     getSelectedProfile(data, getFavs);
+  }else if(theTarget == 'unfavorite'){
+    unFavorite(target);
   }
 }
 
