@@ -140,6 +140,19 @@ function insertUser(db, neophite, callback){
   })
 }
 
+function insertNewTweeter(db, neophite, callback){
+  var payload = {
+    handle:neophite.handle,
+    tweets: [],
+    picture:neophite.picture
+  }
+  db.collection('tweets').insertOne(payload,
+  function(err,result){
+    assert.equal(err,null);
+    callback();
+  })
+};
+
 function login(res, payload){
   var result = checkLogin(payload);
   res.cookie('user', result._id);
@@ -449,6 +462,43 @@ app.post('/signup', jsonParser, function(req,res){
       res.json(neophite);
     })
   })
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am making a new user tweets');;
+    insertNewTweeter(db,neophite, function(){
+      db.close()
+    })
+  })
 });
 
-app.listen(8080);
+app.post('/favs',jsonParser, function(req, res) {
+  var payload = req.body;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am finding the followers/following for the user');
+    findTweets(db, payload, function(){
+      db.close();
+      var c = [];
+      for(var i = 0; i<tweets.length; i++){
+        for(var z = 0; z<payload.length; z++){
+          if(payload[z].handle == tweets[i].handle){
+            for( var y = 0; y< tweet[i].tweets.length; y++){
+              if(payload[z].number == tweets[i].tweets[y].number){
+                c.push(tweets[i]);
+              }
+            }
+          }
+        }
+      }
+      res.json(c);
+    })
+  })
+});
+
+app.post('/addfav', jsonParser, function(req, res) {
+  var payload = req.body;
+  
+});
+
+var port = process.env.PORT || 8080;
+app.listen(port, function(){});
