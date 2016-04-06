@@ -261,6 +261,35 @@ function checkSuggestions(user){
   return sugg;
 };
 
+function addFavorite(db,payload,callback){
+  var userHandle = {
+    handle:payload.userHandle
+  }
+  var tweetHandle = {
+    handle:payload.tweetHandle
+  }
+  var favs = {
+    favs: {
+      handle: payload.tweetHandle,
+      number: payload.tweetNumber
+    }
+  }
+  var notification = {
+    notifications:{
+      tweetNumber:payload.tweetNumber,
+      handle:payload.userHandle,
+      text:payload.tweetText,
+      picture: payload.userPic
+    }
+  }
+  var bulk = db.collection('users').initializeUnorderedBulkOp();
+  bulk.find(userHandle).update({ $push: favs });
+  bulk.find(userHandle).update({$inc:{"numberOfFavs" : 1}});
+  bulk.find(tweetHandle).update({ $push: notification });
+  bulk.find(tweetHandle).update({ $inc: {"numberOfNotifications": 1}});
+  bulk.execute();
+}
+
 app.use(express.static('./public/'));
 
 app.get('/home', cookieParser(), function(req,res){
@@ -497,7 +526,28 @@ app.post('/favs',jsonParser, function(req, res) {
 
 app.post('/addfav', jsonParser, function(req, res) {
   var payload = req.body;
-  
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am adding favorites to a person');
+    addFavorite(db, payload, function(){
+      db.close();
+    })
+  })
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am updating tweets with the favorites');
+    var userHandle = {
+      handle:payload.userHandle
+    }
+    var bulk = db.collection('tweets').initializeUnorderedBulkOp();
+    bulk.find({"handle":payload.tweetHandle, 'tweets.number': ~~payload.tweetNumber}).update({$push: {"tweets.$.favs": userHandle}});
+    bulk.find({"handle":payload.tweetHandle,
+    'tweets.number': ~~payload.tweetNumber}).update({$inc:{"tweets.$.numberOfFavs" : 1}});
+    console.log({"handle":payload.tweetHandle,
+    'tweets.number': ~~payload.tweetNumber});
+    bulk.execute();
+    db.close();
+  })
 });
 
 var port = process.env.PORT || 8080;
