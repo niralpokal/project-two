@@ -777,5 +777,28 @@ app.post('/removeRetweet', jsonParser, function(req, res) {
   })
 });
 
+app.post('/messageList', jsonParser, function(req, res){
+  var payload = req.body;
+  MongoClient.connect(url, function(err, db){
+    assert.equal(null,err);
+    console.log('I am getting messages for the user');
+    findUsers(db, payload, function(){
+      db.close();
+      var c = []
+      for(var i = 0; i < globalUsers.length; i++){
+        if (payload.messageHandle == globalUsers[i].handle){
+          var user = globalUsers[i].messages;
+          for (var z = 0; z < user.length; z++) {
+            if(payload.userHandle == user[z].handle){
+              c.push(user[z]);
+            }
+          }
+        }
+      }
+      res.json(c);
+    })
+  })
+})
+
 var port = process.env.PORT || 8080;
 app.listen(port, function(){});

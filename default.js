@@ -21,12 +21,13 @@ var selectedNav = document.getElementById('selectedNav');
 var messagesDiv = document.getElementById('messagesDiv');
 var messagesContainer = document.getElementById('messagesContainer');
 var messages = document.getElementById('messages');
-var messageInfo = document.getElementById('messageInfo')
+var messagesInfo = document.getElementById('messagesInfo')
 var messageBox = document.getElementById('messageBox');
 var submitMessage = document.getElementById('submitMessage');
 var messageList = document.getElementById('messageList')
 var myUser = {};
-myTweets = {};
+var myTweets = {};
+var followersInfo = {};
 
 var promise = new Promise(function(resolve, reject){
   var xhr = new XMLHttpRequest();
@@ -769,6 +770,7 @@ function getFollowing(result){
 }
 
 function getMessages(){
+  followersInfo.length = 0
   var array = myUser.following;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '/followers', true);
@@ -778,6 +780,7 @@ function getMessages(){
   xhr.onload = function(){
     if(xhr.status ===200){
       var answer = JSON.parse(xhr.responseText);
+      followersInfo = answer;
       appendMessages(answer);
     }
   }
@@ -798,15 +801,15 @@ function appendMessages(result){
     picture.setAttribute('src', result[i].picture);
     picture.setAttribute('alt', "Profile Pic")
     picture.setAttribute('class', "img-rounded")
-    picture.setAttribute('width', 60);
-    picture.setAttribute('height', 60);
+    picture.setAttribute('width', 75);
+    picture.setAttribute('height', 75);
     picture.setAttribute('data-id', 'thumbnailProfile');
     var br = document.createElement('br');
     var userName = document.createElement('h1');
     userName.className ="text-center";
     var userHandle = document.createElement('p');
     userName.setAttribute('data-id', result[i].handle)
-    userHandle.className = "text-center";
+    userHandle.className = "text-center small";
     var userText = document.createElement('p');
     userText.className = "small text-center";
     var userNameText = document.createTextNode(captilizeFirstLetter(result[i].name));
@@ -833,6 +836,93 @@ function appendMessages(result){
     thumbnail.appendChild(caption);
     col.appendChild(thumbnail)
     messagesDiv.appendChild(col)
+  }
+}
+
+function getMessageList(target){
+  var parent = target.parentNode;
+  var theParent = parent.getElementsByTagName('h1')[0];
+  var messageHandle = theParent.dataset.id
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/messageList', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  var myData = {
+    userHandle:myUser.handle,
+    messageHandle:messageHandle
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var result = JSON.parse(xhr.responseText)
+      appendMessageList(messageHandle,result);
+    }
+  }
+}
+
+function appendMessageList(messageHandle,result){
+  showMessages();
+  for (var w = 0; w<followersInfo.length; w ++){
+    if(followersInfo[w].handle== messageHandle){
+      var info = followersInfo[w]
+      var thumbnail = document.createElement('div')
+      thumbnail.className ="thumbnail"
+      var caption = document.createElement('div')
+      caption.className="caption text-center"
+      var picture = document.createElement('img');
+      picture.setAttribute('src', info.picture);
+      picture.setAttribute('alt', "Profile Pic")
+      picture.setAttribute('class', "img-rounded margin")
+      picture.setAttribute('width', 150);
+      picture.setAttribute('height', 150);
+      picture.setAttribute('data-id', 'thumbnailProfile')
+      var userName = document.createElement('h1');
+      userName.className ="text-center margin";
+      userName.setAttribute('data-id', info.handle)
+      var userHandle = document.createElement('p');
+      userHandle.className = "text-center";
+      var userText = document.createElement('p');
+      userText.className = "small text-center";
+      var userNameText = document.createTextNode(captilizeFirstLetter(info.name));
+      var userHandleText = document.createTextNode('@'+info.handle);
+      var userTextNode = document.createTextNode(captilizeFirstLetter(info.text));
+      userName.appendChild(userNameText);
+      userHandle.appendChild(userHandleText);
+      userText.appendChild(userTextNode);
+      caption.appendChild(userName);
+      caption.appendChild(userHandle);
+      caption.appendChild(userText);
+      thumbnail.appendChild(picture);
+      thumbnail.appendChild(caption);
+      messagesInfo.appendChild(thumbnail);
+    }
+  }
+  for(var i = 0; i<result.length; i ++){
+    var panel = document.createElement('div');
+    panel.className = "panel panel-default"
+    var panelBody = document.createElement('div');
+    panelBody.className = "panel-body";
+    var media = document.createElement('div');
+    media.className = "media";
+    var mediaBody = document.createElement('div');
+    mediaBody.className = "media-body";
+    var h5 = document.createElement('h5');
+    var smallh5 = document.createElement('h5');
+    smallh5.className = "small";
+    var p = document.createElement('p');
+    var handle = document.createTextNode(result[i].handle);
+    var text = document.createTextNode(result[i].text);
+    var date = document.createTextNode(result[i].date);
+    h5.appendChild(handle);
+    smallh5.appendChild(date);
+    p.appendChild(text);
+    mediaBody.appendChild(h5);
+    mediaBody.appendChild(smallh5);
+    mediaBody.appendChild(p);
+    media.appendChild(mediaBody);
+    panelBody.appendChild(media);
+    panel.appendChild(panelBody);
+    messageList.appendChild(panel);
   }
 }
 
@@ -1112,6 +1202,8 @@ function myTarget(event){
     removeRetweet(target);
   }else if(id == 'userMessages'){
     getMessages();
+  }else if(theTarget == 'message'){
+    getMessageList(target);
   }
 }
 
