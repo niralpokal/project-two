@@ -271,12 +271,12 @@ function addFavorite(db,payload,callback){
   var favs = {
     favs: {
       handle: payload.tweetHandle,
-      number: payload.tweetNumber
+      number: Number(payload.tweetNumber)
     }
   }
   var notification = {
     notifications:{
-      tweetNumber:payload.tweetNumber,
+      tweetNumber:Number(payload.tweetNumber),
       handle:payload.userHandle,
       text:payload.tweetText,
       picture: payload.userPic
@@ -300,12 +300,12 @@ function removeFavorite(db,payload,callback){
   var favs = {
     favs: {
       handle: payload.tweetHandle,
-      number: payload.tweetNumber
+      number: Number(payload.tweetNumber)
     }
   }
   var notification = {
     notifications:{
-      tweetNumber:payload.tweetNumber,
+      tweetNumber:Number(payload.tweetNumber),
       handle:payload.userHandle,
       text:payload.tweetText,
       picture: payload.userPic
@@ -417,7 +417,35 @@ app.post('/addFollower', jsonParser, function(req, res) {
   })
 });
 
-app.get('/getFollower', cookieParser(), function(req, res){
+app.post('/removeFollower', jsonParser, function(req, res) {
+  var user = req.body;
+  var handle = {
+    handle:user.user
+  }
+  var handle2 = {
+    handle:user.follow
+  }
+  var myData = {
+    following:handle2
+  }
+  var myData2 = {
+    followers:handle
+  }
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am updating followers');
+    var bulk = db.collection('users').initializeUnorderedBulkOp();
+    bulk.find(handle).update({ $pull: myData });
+    bulk.find(handle).update({$inc:{"numberOfFollowing" : -1}});
+    bulk.find(handle2).update({ $pull: myData2 });
+    bulk.find(handle2).update({ $inc: {"numberOfFollowers": -1}});
+    bulk.execute();
+    db.close();
+    res.sendStatus(200);
+  })
+});
+
+app.get('/getUpdate', cookieParser(), function(req, res){
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('I am finding a updated user info');
@@ -425,7 +453,6 @@ app.get('/getFollower', cookieParser(), function(req, res){
       db.close();
       for(var i = 0; i<myUsers.length; i++){
         if(req.cookies.id == myUsers[i].handle){
-          console.log('hi');
           res.json(myUsers[i]);
           break;
         }
@@ -575,9 +602,9 @@ app.post('/addfav', jsonParser, function(req, res) {
       handle:payload.userHandle
     }
     var bulk = db.collection('tweets').initializeUnorderedBulkOp();
-    bulk.find({"handle":payload.tweetHandle, 'tweets.number': ~~payload.tweetNumber}).update({$push: {"tweets.$.favs": userHandle}});
+    bulk.find({"handle":payload.tweetHandle, 'tweets.number':Number(payload.tweetNumber)}).update({$push: {"tweets.$.favs": userHandle}});
     bulk.find({"handle":payload.tweetHandle,
-    'tweets.number': ~~payload.tweetNumber}).update({$inc:{"tweets.$.numberOfFavs" : 1}});
+    'tweets.number':Number(payload.tweetNumber)}).update({$inc:{"tweets.$.numberOfFavs" : 1}});
     bulk.execute();
     db.close();
   })
@@ -599,9 +626,9 @@ app.post('/removefav', jsonParser, function(req, res) {
       handle:payload.userHandle
     }
     var bulk = db.collection('tweets').initializeUnorderedBulkOp();
-    bulk.find({"handle":payload.tweetHandle, 'tweets.number': ~~payload.tweetNumber}).update({$pull: {"tweets.$.favs": userHandle}});
+    bulk.find({"handle":payload.tweetHandle, 'tweets.number':Number(payload.tweetNumber)}).update({$pull: {"tweets.$.favs": userHandle}});
     bulk.find({"handle":payload.tweetHandle,
-    'tweets.number': ~~payload.tweetNumber}).update({$inc:{"tweets.$.numberOfFavs" : -1}});
+    'tweets.number':Number(payload.tweetNumber)}).update({$inc:{"tweets.$.numberOfFavs" : -1}});
     bulk.execute();
     db.close();
   })
