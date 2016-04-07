@@ -10,6 +10,7 @@ var userInfo = document.getElementById('userInfo')
 var trends = document.getElementById('trends')
 var timeline = document.getElementById('timeline');
 var tweetBox = document.getElementById('tweetBox');
+var userMessages = document.getElementById('userMessages');
 var submitTweetBtn = document.getElementById('submitTweet');
 var suggestions = document.getElementById('suggestions');
 var selectedProfile = document.getElementById('selectedProfile');
@@ -17,6 +18,13 @@ var userProfile = document.getElementById('userProfile')
 var userSuggestions = document.getElementById('userSuggestions')
 var selectedTimeline = document.getElementById('selectedTimeline')
 var selectedNav = document.getElementById('selectedNav');
+var messagesDiv = document.getElementById('messagesDiv');
+var messagesContainer = document.getElementById('messagesContainer');
+var messages = document.getElementById('messages');
+var messageInfo = document.getElementById('messageInfo')
+var messageBox = document.getElementById('messageBox');
+var submitMessage = document.getElementById('submitMessage');
+var messageList = document.getElementById('messageList')
 var myUser = {};
 myTweets = {};
 
@@ -258,6 +266,8 @@ function appendUserTimeline(body, dom){
         handle = document.createTextNode('You retweeted '+'@' + innerTweets[z].handle);
       } else if(innerTweets[z].re == 1){
         handle = document.createTextNode('@'+ innerTweets[z].retweeter + ' retweeted '+'@' + innerTweets[z].handle);
+        retweetIcon.className = "fa fa-retweet";
+        retweetIcon.setAttribute('data-id', 'cant');
       }
       var fav = document.createElement('li');
       fav.setAttribute('role', 'button');
@@ -758,6 +768,74 @@ function getFollowing(result){
   }
 }
 
+function getMessages(){
+  var array = myUser.following;
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/followers', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var payload = JSON.stringify(array);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status ===200){
+      var answer = JSON.parse(xhr.responseText);
+      appendMessages(answer);
+    }
+  }
+}
+
+function appendMessages(result){
+  showMessagesContainer();
+  messagesDiv.className="row-fluid"
+  removeMessages();
+  for(var i = 0; i < result.length; i++){
+    var col = document.createElement('div');
+    col.className="col-xs-6 col-md-4"
+    var thumbnail = document.createElement('div')
+    thumbnail.className ="thumbnail"
+    var caption = document.createElement('div')
+    caption.className="caption text-center"
+    var picture = document.createElement('img');
+    picture.setAttribute('src', result[i].picture);
+    picture.setAttribute('alt', "Profile Pic")
+    picture.setAttribute('class', "img-rounded")
+    picture.setAttribute('width', 60);
+    picture.setAttribute('height', 60);
+    picture.setAttribute('data-id', 'thumbnailProfile');
+    var br = document.createElement('br');
+    var userName = document.createElement('h1');
+    userName.className ="text-center";
+    var userHandle = document.createElement('p');
+    userName.setAttribute('data-id', result[i].handle)
+    userHandle.className = "text-center";
+    var userText = document.createElement('p');
+    userText.className = "small text-center";
+    var userNameText = document.createTextNode(captilizeFirstLetter(result[i].name));
+    var userHandleText = document.createTextNode('@'+result[i].handle);
+    var userTextNode = document.createTextNode(captilizeFirstLetter(result[i].text));
+    var messageBtn = document.createElement('a');
+    messageBtn.setAttribute('role', 'button')
+    messageBtn.setAttribute('data-id', 'message')
+    var messageText = document.createTextNode('Message');
+    messageText.className="text-muted small text-center";
+    messageBtn.appendChild(messageText)
+    userName.appendChild(userNameText);
+    userHandle.appendChild(userHandleText);
+    userText.appendChild(userTextNode);
+    caption.appendChild(userName);
+    caption.appendChild(userHandle);
+    caption.appendChild(userText);
+    caption.appendChild(messageBtn);
+    if(myUser.handle == result[i].handle){
+        caption.removeChild(caption.lastChild);
+      }
+    caption.appendChild(br);
+    thumbnail.appendChild(picture);
+    thumbnail.appendChild(caption);
+    col.appendChild(thumbnail)
+    messagesDiv.appendChild(col)
+  }
+}
+
 function getFavs(result){
   var array = result.favs;
   var xhr = new XMLHttpRequest();
@@ -1032,6 +1110,8 @@ function myTarget(event){
     addRetweet(target);
   }else if(theTarget == 'removeRetweet'){
     removeRetweet(target);
+  }else if(id == 'userMessages'){
+    getMessages();
   }
 }
 
@@ -1071,6 +1151,25 @@ function removeUserInfo(){
   while(element.firstChild){
     element.removeChild(element.firstChild);
   }
+}
+
+function showMessagesContainer(){
+  landingPage.className = "hidden";
+  userProfile.className="hidden";
+  selectedProfile.className = "hidden"
+  messagesContainer.className="container-fluid well";
+}
+
+function removeMessages(){
+  var element = messagesDiv;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+}
+
+function showMessages(){
+  messages.className = "row-fluid";
+  messagesDiv.className=" hidden";
 }
 
 function removeSuggestions(){
