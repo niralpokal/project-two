@@ -323,7 +323,7 @@ function removeFavorite(db,payload,callback){
 
 function addRetweet(db, payload, callback){
   var userHandle ={
-    handle: payload.userhandle
+    handle: payload.userHandle
   }
   var tweetHandle = {
     handle: payload.tweetHandle
@@ -338,7 +338,7 @@ function addRetweet(db, payload, callback){
     }
   }
   var bulk = db.collection('users').initializeUnorderedBulkOp();
-  bulk.find(userHandle).update({$inc: {"numberOfTweets": 1}});
+  bulk.find(userHandle).update({$inc:{"numberOfTweets": 1}});
   bulk.find(tweetHandle).update({$push: notification});
   bulk.find(tweetHandle).update({$inc: {"numberOfNotifications": 1}});
   bulk.execute();
@@ -347,7 +347,7 @@ function addRetweet(db, payload, callback){
 
 function removeRetweet(db, payload, callback){
   var userHandle ={
-    handle: payload.userhandle
+    handle: payload.userHandle
   }
   var tweetHandle = {
     handle: payload.tweetHandle
@@ -362,7 +362,7 @@ function removeRetweet(db, payload, callback){
     }
   }
   var bulk = db.collection('users').initializeUnorderedBulkOp();
-  bulk.find(userHandle).update({$inc: {"numberOfTweets": -1}});
+  bulk.find(userHandle).update({$inc:{"numberOfTweets": -1}});
   bulk.find(tweetHandle).update({$pull: notification});
   bulk.find(tweetHandle).update({$inc: {"numberOfNotifications": -1}});
   bulk.execute();
@@ -399,6 +399,23 @@ app.post('/login', jsonParser, function(req, res) {
     findUser(db, payload, function(){
       db.close();
       login(res,payload);
+    })
+  })
+});
+
+app.get('/getTweets', cookieParser(), function(req, res){
+  var user = req.cookies.id;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('Finding tweets in the database');
+    findTweets(db, user, function(){
+      db.close();
+      for(var i = 0; i< tweets.length; i++){
+        if (user == tweets[i].handle){
+        res.json(tweets[i]);
+        break;
+        }
+      }
     })
   })
 });
@@ -704,6 +721,10 @@ app.post('/addRetweet', jsonParser, function(req, res) {
     var tweet = {
       handle: payload.tweetHandle,
       number: Number(payload.tweetNumber),
+      retweeter: payload.userHandle,
+      numberOfRetweets: Number(payload.retweetNumber),
+      numberOfFavs: 0,
+      retweets: '1',
       re: 1,
       text: payload.tweetText
     }
@@ -737,6 +758,10 @@ app.post('/removeRetweet', jsonParser, function(req, res) {
     var tweet = {
       handle: payload.tweetHandle,
       number: Number(payload.tweetNumber),
+      retweeter: payload.userHandle,
+      numberOfRetweets: Number(payload.retweetNumber),
+      numberOfFavs: 0,
+      retweets: '1',
       re: 1,
       text: payload.tweetText
     }

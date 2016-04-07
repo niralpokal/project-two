@@ -18,6 +18,7 @@ var userSuggestions = document.getElementById('userSuggestions')
 var selectedTimeline = document.getElementById('selectedTimeline')
 var selectedNav = document.getElementById('selectedNav');
 var myUser = {};
+myTweets = {};
 
 var promise = new Promise(function(resolve, reject){
   var xhr = new XMLHttpRequest();
@@ -104,11 +105,25 @@ signUpBtn.addEventListener('click', function(event){
 function showDashBoard(){
   landingPage.className = "hidden";
   dashboard.className = "row-fluid"
+  getTweets();
   appendUserInfo();
-  getUserTimeline();
   getSuggestions(suggestions);
 }
 
+function getTweets(){
+  myTweets.length = 0;
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'getTweets', true);
+  xhr.send();
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var result = JSON.parse(xhr.responseText)
+      myTweets = result;
+      console.log(myTweets);
+      getUserTimeline();
+    }
+  }
+}
 function appendUserInfo(){
   var user = myUser;
   var thumbnail = document.createElement('div')
@@ -236,10 +251,12 @@ function appendUserTimeline(body, dom){
       var retweetIcon = document.createElement('i');
       retweetIcon.className = "fa fa-retweet";
       retweetIcon.setAttribute('data-id', 'addRetweet');
-      if(innerTweets[z].re == 1){
+      if(innerTweets[z].re == 1 && innerTweets[z].retweeter == myUser.handle ){
         retweetIcon.className = "fa fa-retweet blue";
         retweetIcon.setAttribute('data-id', 'removeRetweet');
         handle = document.createTextNode('You retweeted '+'@' + innerTweets[z].handle);
+      } else if(innerTweets[z].re == 1){
+        handle = document.createTextNode('@'+ innerTweets[z].retweeter + ' retweeted '+'@' + innerTweets[z].handle);
       }
       var fav = document.createElement('li');
       fav.setAttribute('role', 'button');
@@ -273,11 +290,18 @@ function appendUserTimeline(body, dom){
       media.appendChild(mediaLeft);
       media.appendChild(mediaBody);
       panelBody.appendChild(media);
-      panel.appendChild(panelBody)
+      panel.appendChild(panelBody);
       dom.appendChild(panel);
+      if(innerTweets[z].retweets.length != undefined){
+        for (var q = 0; q < innerTweets[z].retweets.length; q++){
+          if (innerTweets[z].retweets[q].handle == myUser.handle){
+            dom.removeChild(dom.lastChild);
+            }
+          }
+        }
+      }
     }
   }
-}
 
 function getSuggestions(dom){
   var xhr = new XMLHttpRequest();
@@ -393,8 +417,7 @@ function addFavorite(target){
     tweetText: tweetText,
     userPic: myUser.picture
   }
-  console.log(myData);
-  /*var xhr = new XMLHttpRequest();
+  var xhr = new XMLHttpRequest();
   xhr.open('POST', 'addfav', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   var payload = JSON.stringify(myData);
@@ -403,7 +426,7 @@ function addFavorite(target){
     if(xhr.status === 200){
       return;
     }
-  }*/
+  }
 }
 
 function unFavorite(target){
@@ -421,8 +444,7 @@ function unFavorite(target){
     tweetText: tweetText,
     userPic: myUser.picture
   }
-  console.log(myData);
-  /*var xhr = new XMLHttpRequest();
+  var xhr = new XMLHttpRequest();
   xhr.open('POST', 'removefav', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   var payload = JSON.stringify(myData);
@@ -431,7 +453,63 @@ function unFavorite(target){
     if(xhr.status === 200){
       return;
     }
-  }*/
+  }
+}
+
+function addRetweet(target){
+  target.className = "fa fa-retweet blue"
+  target.setAttribute('data-id', 'removeRetweet')
+  var tweetNumber = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.id
+  var tweetText = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.tweet
+  var tweetHandle = target.parentNode.parentNode.parentNode.firstChild.dataset.id;
+  var number = target.parentNode.lastChild.textContent;
+  target.parentNode.lastChild.textContent = (" " + (~~number +1));
+  var myData = {
+    userHandle: myUser.handle,
+    tweetHandle: tweetHandle,
+    tweetNumber: tweetNumber,
+    tweetText: tweetText,
+    userPic: myUser.picture,
+    retweetNumber: Number(number)
+  }
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'addRetweet', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      return;
+    }
+  }
+}
+
+function removeRetweet(target){
+  target.className = "fa fa-retweet"
+  target.setAttribute('data-id', 'addRetweet')
+  var tweetNumber = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.id
+  var tweetText = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.tweet
+  var tweetHandle = target.parentNode.parentNode.parentNode.firstChild.dataset.id;
+  var number = target.parentNode.lastChild.textContent;
+  target.parentNode.lastChild.textContent = (" " + (~~number -1));
+  var myData = {
+    userHandle: myUser.handle,
+    tweetHandle: tweetHandle,
+    tweetNumber: tweetNumber,
+    tweetText: tweetText,
+    userPic: myUser.picture,
+    retweetNumber: Number(number)
+  }
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'removeRetweet', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      return;
+    }
+  }
 }
 
 function getUpdatedUser(){
@@ -945,6 +1023,10 @@ function myTarget(event){
     unFavorite(target);
   } else if(theTarget == 'unfollow'){
     removeFollower(target);
+  }else if(theTarget == 'addRetweet'){
+    addRetweet(target);
+  }else if(theTarget == 'removeRetweet'){
+    removeRetweet(target);
   }
 }
 
