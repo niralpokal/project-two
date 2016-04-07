@@ -702,6 +702,7 @@ app.post('/addRetweet', jsonParser, function(req, res) {
     var tweet = {
       handle: payload.tweetHandle,
       number: Number(payload.tweetNumber),
+      re: 1,
       text: payload.tweetText
     }
     var bulk = db.collection('tweets').initializeUnorderedBulkOp();
@@ -733,6 +734,7 @@ app.post('/removeRetweet', jsonParser, function(req, res) {
     var tweet = {
       handle: payload.tweetHandle,
       number: Number(payload.tweetNumber),
+      re: 1,
       text: payload.tweetText
     }
     var bulk = db.collection('tweets').initializeUnorderedBulkOp();
