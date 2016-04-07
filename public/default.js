@@ -228,7 +228,7 @@ function appendUserTimeline(body, dom){
       favIcon.className ="fa fa-heart-o";
       favIcon.setAttribute('data-id', 'addfavorite');
       for(var y = 0; y < myUser.favs.length; y++){
-        if (myUser.favs[y].number == innerTweets[z].number){
+        if (myUser.favs[y].number == innerTweets[z].number && myUser.favs[y].handle == innerTweets[z].handle){
           favIcon.className="fa fa-heart";
           favIcon.setAttribute('data-id', 'unfavorite')
         }
@@ -338,6 +338,27 @@ function addFollower(target){
   }
 }
 
+function removeFollower(target){
+  var parent = target.parentNode;
+  var theParent = parent.getElementsByTagName('h1')[0];
+  console.log(theParent);
+  var toFollow = theParent.dataset.id
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/removeFollower', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  var myData = {
+    user:myUser.handle,
+    follow:toFollow
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      getUpdatedUser();
+    }
+  }
+}
+
 function addFavorite(target){
   target.className = "fa fa-heart"
   target.setAttribute('data-id', 'unfavorite')
@@ -358,7 +379,13 @@ function addFavorite(target){
   xhr.setRequestHeader('Content-Type', 'application/json');
   var payload = JSON.stringify(myData);
   xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      return;
+    }
+  }
 }
+
 function unFavorite(target){
   target.className = "fa fa-heart-o"
   target.setAttribute('data-id', 'addfavorite')
@@ -380,12 +407,16 @@ function unFavorite(target){
   xhr.setRequestHeader('Content-Type', 'application/json');
   var payload = JSON.stringify(myData);
   xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      return;
+    }
+  }
 }
-
 
 function getUpdatedUser(){
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/getFollower', true);
+  xhr.open('GET', '/getUpdate', true);
   xhr.send();
   xhr.onload = function(){
     if(xhr.status === 200){
@@ -873,6 +904,8 @@ function myTarget(event){
     getSelectedProfile(data, getFavs);
   }else if(theTarget == 'unfavorite'){
     unFavorite(target);
+  } else if(theTarget == 'unfollow'){
+    removeFollower(target);
   }
 }
 
