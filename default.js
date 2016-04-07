@@ -124,6 +124,7 @@ function getTweets(){
     }
   }
 }
+
 function appendUserInfo(){
   var user = myUser;
   var thumbnail = document.createElement('div')
@@ -932,11 +933,15 @@ function appendFavs(body){
       var retweetIcon = document.createElement('i');
       retweetIcon.className = "fa fa-retweet";
       retweetIcon.setAttribute('data-id', 'addRetweet');
-      if(innerTweets[z].re == 1){
-        retweetIcon.className = "fa fa-retweet blue";
-        retweetIcon.setAttribute('data-id', 'removeRetweet');
-        handle = document.createTextNode('You retweeted '+'@' + innerTweets[z].handle);
-      }
+      if(innerTweets[z].retweets.length != undefined){
+        for (var q = 0; q < innerTweets[z].retweets.length; q++){
+          if (innerTweets[z].retweets[q].handle == myUser.handle){
+            retweetIcon.className = "fa fa-retweet blue";
+            retweetIcon.setAttribute('data-id', 'removeRetweet');
+            handle = document.createTextNode('You retweeted '+'@' + innerTweets[z].handle)
+            }
+          }
+        }
       var fav = document.createElement('li');
       fav.setAttribute('role', 'button');
       var numberOfRetweetsp = document.createElement('a');
