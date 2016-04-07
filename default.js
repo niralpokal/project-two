@@ -233,23 +233,42 @@ function appendUserTimeline(body, dom){
           favIcon.setAttribute('data-id', 'unfavorite')
         }
       }
-      var fav = document.createElement('p');
+      var retweetIcon = document.createElement('i');
+      retweetIcon.className = "fa fa-retweet";
+      retweetIcon.setAttribute('data-id', 'addRetweet');
+      if(innerTweets[z].re == 1){
+        retweetIcon.className = "fa fa-retweet blue";
+        retweetIcon.setAttribute('data-id', 'removeRetweet');
+        handle = document.createTextNode('You retweeted '+'@' + innerTweets[z].handle);
+      }
+      var fav = document.createElement('li');
       fav.setAttribute('role', 'button');
       var numberOfFavsp = document.createElement('a');
       var numberOfFavs = document.createTextNode(' ' +innerTweets[z].numberOfFavs);
       numberOfFavsp.setAttribute('data-id', 'getfavorites' )
+      var numberOfRetweetsp = document.createElement('a');
+      var numberOfRetweets = document.createTextNode(' ' +innerTweets[z].numberOfRetweets + "           ");
+      numberOfRetweetsp.setAttribute('data-id', 'getRetweets' )
       var br = document.createElement('br');
       var br2 = document.createElement('br');
+      var ul = document.createElement('ul')
+      ul.className = 'list-inline'
+      var retweet = document.createElement('li');
+      retweet.setAttribute('role', 'button');
+      numberOfRetweetsp.appendChild(numberOfRetweets);
+      retweet.appendChild(retweetIcon);
+      retweet.appendChild(numberOfRetweetsp);
       numberOfFavsp.appendChild(numberOfFavs)
       fav.appendChild(favIcon);
       fav.appendChild(numberOfFavsp);
       p2.appendChild(tweet);
       p2.appendChild(br)
-      p2.appendChild(br2);
-      p2.appendChild(fav)
       h5.appendChild(handle);
       mediaBody.appendChild(h5);
       mediaBody.appendChild(p2);
+      ul.appendChild(retweet);
+      ul.appendChild(fav);
+      mediaBody.appendChild(ul);
       mediaLeft.appendChild(picture);
       media.appendChild(mediaLeft);
       media.appendChild(mediaBody);
@@ -362,8 +381,8 @@ function removeFollower(target){
 function addFavorite(target){
   target.className = "fa fa-heart"
   target.setAttribute('data-id', 'unfavorite')
-  var tweetNumber = target.parentNode.parentNode.dataset.id
-  var tweetText = target.parentNode.parentNode.dataset.tweet
+  var tweetNumber = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.id
+  var tweetText = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.tweet
   var tweetHandle = target.parentNode.parentNode.parentNode.firstChild.dataset.id;
   var number = target.parentNode.lastChild.textContent;
   target.parentNode.lastChild.textContent = (" " + (~~number +1));
@@ -374,7 +393,8 @@ function addFavorite(target){
     tweetText: tweetText,
     userPic: myUser.picture
   }
-  var xhr = new XMLHttpRequest();
+  console.log(myData);
+  /*var xhr = new XMLHttpRequest();
   xhr.open('POST', 'addfav', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   var payload = JSON.stringify(myData);
@@ -383,14 +403,14 @@ function addFavorite(target){
     if(xhr.status === 200){
       return;
     }
-  }
+  }*/
 }
 
 function unFavorite(target){
   target.className = "fa fa-heart-o"
   target.setAttribute('data-id', 'addfavorite')
-  var tweetNumber = target.parentNode.parentNode.dataset.id
-  var tweetText = target.parentNode.parentNode.dataset.tweet
+  var tweetNumber = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.id
+  var tweetText = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.tweet
   var tweetHandle = target.parentNode.parentNode.parentNode.firstChild.dataset.id;
   var number = target.parentNode.lastChild.textContent;
   target.parentNode.lastChild.textContent = (" " + (~~number -1));
@@ -402,7 +422,7 @@ function unFavorite(target){
     userPic: myUser.picture
   }
   console.log(myData);
-  var xhr = new XMLHttpRequest();
+  /*var xhr = new XMLHttpRequest();
   xhr.open('POST', 'removefav', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   var payload = JSON.stringify(myData);
@@ -411,7 +431,7 @@ function unFavorite(target){
     if(xhr.status === 200){
       return;
     }
-  }
+  }*/
 }
 
 function getUpdatedUser(){
@@ -831,23 +851,42 @@ function appendFavs(body){
       var favIcon = document.createElement('i');
       favIcon.className ="fa fa-heart";
       favIcon.setAttribute('data-id', 'unfavorite');
-      var fav = document.createElement('p');
+      var retweetIcon = document.createElement('i');
+      retweetIcon.className = "fa fa-retweet";
+      retweetIcon.setAttribute('data-id', 'addRetweet');
+      if(innerTweets[z].re == 1){
+        retweetIcon.className = "fa fa-retweet blue";
+        retweetIcon.setAttribute('data-id', 'removeRetweet');
+        handle = document.createTextNode('You retweeted '+'@' + innerTweets[z].handle);
+      }
+      var fav = document.createElement('li');
       fav.setAttribute('role', 'button');
+      var numberOfRetweetsp = document.createElement('a');
+      var numberOfRetweets = document.createTextNode(' ' +innerTweets[z].numberOfRetweets + "           ");
+      numberOfRetweetsp.setAttribute('data-id', 'getRetweets' )
       var numberOfFavsp = document.createElement('a');
       var numberOfFavs = document.createTextNode(' ' +innerTweets[z].numberOfFavs);
       numberOfFavsp.setAttribute('data-id', 'getfavorites' )
       var br = document.createElement('br');
       var br2 = document.createElement('br');
+      var ul = document.createElement('ul')
+      ul.className = 'list-inline'
+      var retweet = document.createElement('li');
+      retweet.setAttribute('role', 'button');
+      numberOfRetweetsp.appendChild(numberOfRetweets);
+      retweet.appendChild(retweetIcon);
+      retweet.appendChild(numberOfRetweetsp);
       numberOfFavsp.appendChild(numberOfFavs)
       fav.appendChild(favIcon);
       fav.appendChild(numberOfFavsp);
       p2.appendChild(tweet);
       p2.appendChild(br)
-      p2.appendChild(br2);
-      p2.appendChild(fav)
       h5.appendChild(handle);
       mediaBody.appendChild(h5);
       mediaBody.appendChild(p2);
+      ul.appendChild(retweet);
+      ul.appendChild(fav);
+      mediaBody.appendChild(ul);
       mediaLeft.appendChild(picture);
       media.appendChild(mediaLeft);
       media.appendChild(mediaBody);
