@@ -657,6 +657,7 @@ app.post('/addfav', jsonParser, function(req, res) {
     'tweets.number':Number(payload.tweetNumber)}).update({$inc:{"tweets.$.numberOfFavs" : 1}});
     bulk.execute();
     db.close();
+    res.sendStatus(200);
   })
 });
 
@@ -681,6 +682,7 @@ app.post('/removefav', jsonParser, function(req, res) {
     'tweets.number':Number(payload.tweetNumber)}).update({$inc:{"tweets.$.numberOfFavs" : -1}});
     bulk.execute();
     db.close();
+    res.sendStatus(200);
   })
 });
 
@@ -713,6 +715,7 @@ app.post('/addRetweet', jsonParser, function(req, res) {
     'tweets.number':Number(payload.tweetNumber)}).update({$push:{"tweets.$.retweets" : userHandle}});
     bulk.execute();
     db.close();
+    res.sendStatus(200);
   })
 });
 
