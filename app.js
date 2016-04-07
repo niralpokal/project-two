@@ -180,7 +180,7 @@ function updateTweets(db, chirp, callback){
   while(i < chirp.mentions.length){
     var handlex = { handle: chirp.mentions[i]};
     var notification = {
-      tweetNumber: chirp.number,
+      tweetNumber: Number(chirp.number),
       handle: chirp.handle,
       picture: chirp.picture,
       text: chirp.text
@@ -283,11 +283,12 @@ function addFavorite(db,payload,callback){
     }
   }
   var bulk = db.collection('users').initializeUnorderedBulkOp();
-  bulk.find(userHandle).update({ $push: favs });
+  bulk.find(userHandle).update({$push: favs});
   bulk.find(userHandle).update({$inc:{"numberOfFavs" : 1}});
-  bulk.find(tweetHandle).update({ $push: notification });
-  bulk.find(tweetHandle).update({ $inc: {"numberOfNotifications": 1}});
+  bulk.find(tweetHandle).update({$push: notification});
+  bulk.find(tweetHandle).update({$inc: {"numberOfNotifications": 1}});
   bulk.execute();
+  callback();
 }
 
 function removeFavorite(db,payload,callback){
@@ -317,6 +318,55 @@ function removeFavorite(db,payload,callback){
   bulk.find(tweetHandle).update({ $pull: notification });
   bulk.find(tweetHandle).update({ $inc: {"numberOfNotifications": -1}});
   bulk.execute();
+  callback();
+}
+
+function addRetweet(db, payload, callback){
+  var userHandle ={
+    handle: payload.userhandle
+  }
+  var tweetHandle = {
+    handle: payload.tweetHandle
+  }
+  var notification = {
+    notifications:{
+      tweetNumber:Number(payload.tweetNumber),
+      handle:payload.userHandle,
+      retweet: 1,
+      text:payload.tweetText,
+      picture: payload.userPic
+    }
+  }
+  var bulk = db.collection('users').initializeUnorderedBulkOp();
+  bulk.find(userHandle).update({$inc: {"numberOfTweets": 1}});
+  bulk.find(tweetHandle).update({$push: notification});
+  bulk.find(tweetHandle).update({$inc: {"numberOfNotifications": 1}});
+  bulk.execute();
+  callback();
+}
+
+function removeRetweet(db, payload, callback){
+  var userHandle ={
+    handle: payload.userhandle
+  }
+  var tweetHandle = {
+    handle: payload.tweetHandle
+  }
+  var notification = {
+    notifications:{
+      tweetNumber:Number(payload.tweetNumber),
+      handle:payload.userHandle,
+      retweet: 1,
+      text:payload.tweetText,
+      picture: payload.userPic
+    }
+  }
+  var bulk = db.collection('users').initializeUnorderedBulkOp();
+  bulk.find(userHandle).update({$inc: {"numberOfTweets": -1}});
+  bulk.find(tweetHandle).update({$pull: notification});
+  bulk.find(tweetHandle).update({$inc: {"numberOfNotifications": -1}});
+  bulk.execute();
+  callback();
 }
 
 app.use(express.static('./public/'));
@@ -597,7 +647,7 @@ app.post('/addfav', jsonParser, function(req, res) {
   })
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am updating tweets with the favorites');
+    console.log('I am adding tweets with the favorites');
     var userHandle = {
       handle:payload.userHandle
     }
@@ -621,7 +671,7 @@ app.post('/removefav', jsonParser, function(req, res) {
   })
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am updating tweets with the favorites');
+    console.log('I am removing tweets with the favorites');
     var userHandle = {
       handle:payload.userHandle
     }
@@ -631,6 +681,69 @@ app.post('/removefav', jsonParser, function(req, res) {
     'tweets.number':Number(payload.tweetNumber)}).update({$inc:{"tweets.$.numberOfFavs" : -1}});
     bulk.execute();
     db.close();
+  })
+});
+
+app.post('/addRetweet', jsonParser, function(req, res) {
+  var payload = req.body;
+  MongoClient.connect(url, function(err, db){
+    assert.equal(null,err);
+    console.log('I am add retweets for the users');
+    addRetweet(db, payload, function(){
+      db.close();
+    })
+  })
+  MongoClient.connect(url, function(err, db){
+    assert.equal(null, err);
+    console.log('I am adding retweets to the tweets');
+    var userHandle = {
+      handle: payload.userHandle
+    }
+    var tweet = {
+      handle: payload.tweetHandle,
+      number: Number(payload.tweetNumber),
+      text: payload.tweetText
+    }
+    var bulk = db.collection('tweets').initializeUnorderedBulkOp();
+    bulk.find(userHandle).update({$push: {"tweets": tweet}});
+    bulk.find({"handle":payload.tweetHandle,
+    'tweets.number':Number(payload.tweetNumber)}).update({$inc:{"tweets.$.numberOfRetweets" : 1}});
+    bulk.find({"handle":payload.tweetHandle,
+    'tweets.number':Number(payload.tweetNumber)}).update({$push:{"tweets.$.retweets" : userHandle}});
+    bulk.execute();
+    db.close();
+  })
+});
+
+app.post('/removeRetweet', jsonParser, function(req, res) {
+  var payload = req.body;
+  MongoClient.connect(url, function(err, db){
+    assert.equal(null,err);
+    console.log('I am add retweets for the users');
+    removeRetweet(db, payload, function(){
+      db.close();
+    })
+  })
+  MongoClient.connect(url, function(err, db){
+    assert.equal(null, err);
+    console.log('I am adding retweets to the tweets');
+    var userHandle = {
+      handle: payload.userHandle
+    }
+    var tweet = {
+      handle: payload.tweetHandle,
+      number: Number(payload.tweetNumber),
+      text: payload.tweetText
+    }
+    var bulk = db.collection('tweets').initializeUnorderedBulkOp();
+    bulk.find(userHandle).update({$pull: {"tweets": tweet}});
+    bulk.find({"handle":payload.tweetHandle,
+    'tweets.number':Number(payload.tweetNumber)}).update({$inc:{"tweets.$.numberOfRetweets" : -1}});
+    bulk.find({"handle":payload.tweetHandle,
+    'tweets.number':Number(payload.tweetNumber)}).update({$pull:{"tweets.$.retweets" : userHandle}});
+    bulk.execute();
+    db.close();
+    res.sendStatus(200);
   })
 });
 
