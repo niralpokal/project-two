@@ -266,12 +266,14 @@ function appendUserTimeline(body, dom){
       var favIcon = document.createElement('i');
       favIcon.className ="fa fa-heart-o";
       favIcon.setAttribute('data-id', 'addfavorite');
+      if(myUser.favs.length != undefined){
       for(var y = 0; y < myUser.favs.length; y++){
         if (myUser.favs[y].number == innerTweets[z].number && myUser.favs[y].handle == innerTweets[z].handle){
           favIcon.className="fa fa-heart";
           favIcon.setAttribute('data-id', 'unfavorite')
         }
       }
+    }
       var retweetIcon = document.createElement('i');
       retweetIcon.className = "fa fa-retweet";
       retweetIcon.setAttribute('data-id', 'addRetweet');
@@ -876,7 +878,7 @@ function getMessageList(target){
   xhr.send(payload);
   xhr.onload = function(){
     if(xhr.status === 200){
-      var result = JSON.parse(xhr.responseText)
+      var result = JSON.parse(xhr.responseText);
       appendMessageList(messageHandle,result);
     }
   }
@@ -921,8 +923,8 @@ function appendMessageList(messageHandle,result){
       messagesInfo.appendChild(thumbnail);
     }
   }
-    for(var i = 0; i<result[0].messageList.length; i ++){
-      console.log(result[0].messageList[i]);
+  var reverse = result[0].messageList.reverse();
+    for(var i = 0; i<reverse.length; i ++){
       var panel = document.createElement('div');
       panel.className = "panel panel-default"
       var panelBody = document.createElement('div');
@@ -934,10 +936,13 @@ function appendMessageList(messageHandle,result){
       var smallh6 = document.createElement('h6');
       smallh6.className = "small white";
       var p = document.createElement('p');
-      var date1 = result[0].messageList[i].date
+      var date1 = reverse[i].date
       var x = date1.toLocaleString();
-      var handle = document.createTextNode("From: @" + result[0].messageList[i].handle);
-      var text = document.createTextNode(result[0].messageList[i].text);
+      var handle = document.createTextNode("From: @" + reverse[i].handle);
+      var text = document.createTextNode(reverse[i].text);
+      if (reverse[i].handle == myUser.handle) {
+        panelHeading.className = "panel-heading user-message"
+      }
       var date = document.createTextNode(x);
       h5.appendChild(handle);
       smallh6.appendChild(date);
@@ -1238,6 +1243,8 @@ function goToLanding(){
   removeSelectedSuggestions();
   removeMessageList();
   removeMessageInfo();
+  removeNotifcations();
+  hideNotifcationsContainer();
   dashboard.className = "hidden";
   selectedProfile.className = "container-fluid hidden"
   userProfile.className = "container-fluid well";
@@ -1263,44 +1270,50 @@ function appendNotifications(){
   showNotifcationsContainer();
   removeNotifcations();
   notificationNumber.textContent = 0;
-  for(var i = 0; i <myUser.notifications.length; i++){
-    var x = myUser.notifications[i];
-    var panel = document.createElement('div');
-    panel.className = "panel panel-default"
-    var panelBody = document.createElement('div');
-    panelBody.className = "panel-body";
-    var panelHeading = document.createElement('div');
-    panelHeading.className = "panel-heading grey-background"
-    var pic = document.createElement('img')
-    pic.setAttribute('src', x.picture);
-    pic.setAttribute('height', 30);
-    pic.setAttribute('width', 30);
-    pic.className = "img-rounded float-left"
-    var h5 = document.createElement('h5');
-    h5.className=""
-    var p = document.createElement('p');
-    var handle = document.createTextNode(" From: @" + x.handle);
-    var text = document.createTextNode('@'+x.handle+ ' ' + "favorited your tweet " + "'" + x.text + "'");
-    if(x.retweet ==1){
-      var text = document.createTextNode('@'+x.handle+ ' ' + "retweeted your tweet " + "'" + x.text + "'");
-    }else if(x.mess == 1){
-      var text = document.createTextNode('@'+x.handle+ ' ' + "messaged you " + "'" + x.text + "'");
-    }
-    h5.appendChild(pic);
-    h5.appendChild(handle);
-    p.appendChild(text);
-    panelHeading.appendChild(h5);
-    panelBody.appendChild(p);
-    panel.appendChild(panelHeading);
-    panel.appendChild(panelBody);
-    notifications.appendChild(panel)
-  }
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/notifications', true);
+  xhr.open('GET', '/notifications');
   xhr.send();
   xhr.onload = function(){
     if(xhr.status ===200){
-      return;
+      var reverse = myUser.notifications.reverse();
+      for(var i = 0; i <reverse.length; i++){
+        var x = reverse[i];
+        var panel = document.createElement('div');
+        panel.className = "panel panel-default"
+        var panelBody = document.createElement('div');
+        panelBody.className = "panel-body";
+        var panelHeading = document.createElement('div');
+        panelHeading.className = "panel-heading grey-background"
+        var pic = document.createElement('img')
+        pic.setAttribute('src', x.picture);
+        pic.setAttribute('height', 30);
+        pic.setAttribute('width', 30);
+        pic.className = "img-rounded float-left"
+        var h5 = document.createElement('h5');
+        h5.className=""
+        var p = document.createElement('p');
+        var handle = document.createTextNode(" From: @" + x.handle);
+        var text = document.createTextNode('@'+x.handle+ ' ' + "favorited your tweet " + "'" + x.text + "'");
+        if(x.retweet ==1){
+          var text = document.createTextNode('@'+x.handle+ ' ' + "retweeted your tweet " + "'" + x.text + "'");
+        }else if(x.mess == 1){
+          var text = document.createTextNode('@'+x.handle+ ' ' + "messaged you " + "'" + x.text + "'");
+          pic.setAttribute('src', 'https://abs.twimg.com/sticky/default_profile_images/default_profile_0_200x200.png')
+        } else if(x.men == 1){
+          var text = document.createTextNode('@'+x.handle+ ' ' + "mentioned you in " + "'" + x.text + "'");
+        }else if (x.fol == 1){
+          var text = document.createTextNode('@'+x.handle+ ' ' + "followed you.");
+          pic.setAttribute('src', 'https://abs.twimg.com/sticky/default_profile_images/default_profile_0_200x200.png')
+        }
+        h5.appendChild(pic);
+        h5.appendChild(handle);
+        p.appendChild(text);
+        panelHeading.appendChild(h5);
+        panelBody.appendChild(p);
+        panel.appendChild(panelHeading);
+        panel.appendChild(panelBody);
+        notifications.appendChild(panel)
+      }
     }
   }
 }
@@ -1366,6 +1379,7 @@ function myTarget(event){
     logout();
   }else if(id == 'submitMessage'){
     sendMessage(target);
+    document.getElementById('form4').reset();
   }else if(id == "userNotifications"){
     appendNotifications();
   }

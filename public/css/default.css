@@ -47,4 +47,5 @@
 .margin { margin-top: 10 !important; }
 .blue-background { background-color:#3498db !important; }
 .white { color: white !important; }
-.grey-background {background-color: #C0C0C0 !important}
+.grey-background {background-color: #C0C0C0 !important; }
+.user-message {background-color: #ffaa80 !important;}

@@ -36,6 +36,7 @@ function User(user){
   this.numberOfNotifications = 0;
   this.numberOfMessages = 0;
   this.picture = "https://abs.twimg.com/sticky/default_profile_images/default_profile_0_200x200.png"
+  this.favs = [];
 }
 
 function Tweet(tweet){
@@ -183,7 +184,8 @@ function updateTweets(db, chirp, callback){
       tweetNumber: Number(chirp.number),
       handle: chirp.handle,
       picture: chirp.picture,
-      text: chirp.text
+      text: chirp.text,
+      men: 1
     }
     console.log(handlex);
     bulk.find(handlex).update({$push: { "notifications": notification }})
@@ -472,6 +474,12 @@ app.post('/addFollower', jsonParser, function(req, res) {
   var myData2 = {
     followers:handle
   }
+  var notification = {
+    notifications: {
+      handle: user.user,
+      fol: 1
+    }
+  }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('I am updating followers');
@@ -480,6 +488,8 @@ app.post('/addFollower', jsonParser, function(req, res) {
     bulk.find(handle).update({$inc:{"numberOfFollowing" : 1}});
     bulk.find(handle2).update({ $push: myData2 });
     bulk.find(handle2).update({ $inc: {"numberOfFollowers": 1}});
+    bulk.find(handle2).update({$push:notification});
+    bulk.find(handle2).update({ $inc: {"numberOfNotifications": 1}});
     bulk.execute();
     db.close();
     res.sendStatus(200);
@@ -842,9 +852,9 @@ app.post('/updateMessage', jsonParser, function(req, res) {
       messageList:[]
     }
     var message = {
-    date:payload.date,
-    handle:payload.userHandle,
-    text:payload.text
+      date:payload.date,
+      handle:payload.userHandle,
+      text:payload.text
     }
     var bulk = db.collection('users').initializeOrderedBulkOp();
     bulk.find(messageHandle).update({$push:{"messages": userMessage}});
@@ -853,7 +863,7 @@ app.post('/updateMessage', jsonParser, function(req, res) {
     'messages.handle':payload.userHandle}).update({$push:{"messages.$.messageList" : message}});
     bulk.find({"handle":payload.userHandle,
     'messages.handle':payload.messageHandle}).update({$push:{"messages.$.messageList" : message}});
-    bulk.find(messageHandle).update({$push: notification});
+    bulk.find(messageHandle).upsert().update({$push: notification});
     bulk.find(messageHandle).update({$inc: {"numberOfNotifications": 1}});
     bulk.find(messageHandle).update({$inc: {"numberOfMessages": 1}})
     bulk.execute();
@@ -878,7 +888,7 @@ app.get('/notifications', cookieParser(), function(req, res){
     var handle = {handle: user}
     db.collection('users').update(handle,{ $set: {"numberOfNotifications":0}})
     db.close();
-    res.sendStatus(200)
+    res.sendStatus(200);
   })
 })
 
