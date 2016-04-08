@@ -1386,7 +1386,7 @@ function appendNotifications(){
         var panelBody = document.createElement('div');
         panelBody.className = "panel-body";
         var panelHeading = document.createElement('div');
-        panelHeading.className = "panel-heading blue-background"
+        panelHeading.className = "panel-heading lightblue-background"
         var pic = document.createElement('img')
         pic.setAttribute('src', x.picture);
         pic.setAttribute('height', 30);
