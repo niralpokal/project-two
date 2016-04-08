@@ -808,6 +808,54 @@ app.post('/messageList', jsonParser, function(req, res){
   })
 });
 
+app.post('/updateMessage', jsonParser, function(req, res) {
+  var payload = req.body;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am updating messages');
+    var userHandle = {
+      handle:payload.userHandle
+    };
+    var messageHandle = {
+      handle:payload.messageHandle
+    };
+    var notification = {
+      notifications:{
+        handle:payload.userHandle,
+        text:payload.text,
+        mess:1
+      }
+    }
+    var userMessage = {
+        handle:payload.userHandle,
+        messageList:{}
+      }
+    var otherMessage = {
+      handle:payload.messageHandle,
+      messageList:{}
+    }
+    var message = {
+    date:payload.date,
+    handle:payload.userHandle,
+    text:payload.text
+    }
+
+    var bulk = db.collection('users').initializeOrderedBulkOp();
+    bulk.find(messageHandle).upsert().update({$push: {"messages": userMessage}});
+    bulk.find(userHandle).upsert().update({$push: {"messages": otherMessage}});
+    bulk.find({"handle":payload.messageHandle,
+    'messages.handle':payload.userHandle}).update({$push:{"messages.$.messageList" : message}});
+    bulk.find({"handle":payload.userHandle,
+    'messages.handle':payload.messageHandle}).update({$push:{"messages.$.messageList" : message}});
+    bulk.find(messageHandle).update({$push: notification});
+    bulk.find(messageHandle).update({$inc: {"numberOfNotifications": 1}});
+    bulk.find(messageHandle).update({$inc: {"numberOfMessages": 1}})
+    db.close();
+    res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)});
+    res.sendStatus(200);
+  })
+});
+
 app.get('/logout', cookieParser(), function(req, res) {
   res.clearCookie('remember');
   res.clearCookie('id');
