@@ -828,28 +828,28 @@ app.post('/updateMessage', jsonParser, function(req, res) {
     }
     var userMessage = {
         handle:payload.userHandle,
-        messageList:{}
+        messageList:[]
       }
     var otherMessage = {
       handle:payload.messageHandle,
-      messageList:{}
+      messageList:[]
     }
     var message = {
     date:payload.date,
     handle:payload.userHandle,
     text:payload.text
     }
-
     var bulk = db.collection('users').initializeOrderedBulkOp();
-    bulk.find(messageHandle).upsert().update({$push: {"messages": userMessage}});
-    bulk.find(userHandle).upsert().update({$push: {"messages": otherMessage}});
-    bulk.find({"handle":payload.messageHandle,
+    bulk.find(messageHandle).update({$push:{"messages": userMessage}});
+    bulk.find(userHandle).update({$push:{"messages": otherMessage}});
+    bulk.find({'handle':payload.messageHandle,
     'messages.handle':payload.userHandle}).update({$push:{"messages.$.messageList" : message}});
     bulk.find({"handle":payload.userHandle,
     'messages.handle':payload.messageHandle}).update({$push:{"messages.$.messageList" : message}});
     bulk.find(messageHandle).update({$push: notification});
     bulk.find(messageHandle).update({$inc: {"numberOfNotifications": 1}});
     bulk.find(messageHandle).update({$inc: {"numberOfMessages": 1}})
+    bulk.execute();
     db.close();
     res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)});
     res.sendStatus(200);

@@ -869,6 +869,8 @@ function getMessageList(target){
 }
 
 function appendMessageList(messageHandle,result){
+  removeMessageList();
+  removeMessageInfo();
   showMessages();
   for (var w = 0; w<followersInfo.length; w ++){
     if(followersInfo[w].handle== messageHandle){
@@ -905,32 +907,77 @@ function appendMessageList(messageHandle,result){
       messagesInfo.appendChild(thumbnail);
     }
   }
-  for(var i = 0; i<result.length; i ++){
-    var panel = document.createElement('div');
-    panel.className = "panel panel-default"
-    var panelBody = document.createElement('div');
-    panelBody.className = "panel-body";
-    var media = document.createElement('div');
-    media.className = "media";
-    var mediaBody = document.createElement('div');
-    mediaBody.className = "media-body";
-    var h5 = document.createElement('h5');
-    var smallh5 = document.createElement('h5');
-    smallh5.className = "small";
-    var p = document.createElement('p');
-    var handle = document.createTextNode(result[i].handle);
-    var text = document.createTextNode(result[i].text);
-    var date = document.createTextNode(result[i].date);
-    h5.appendChild(handle);
-    smallh5.appendChild(date);
-    p.appendChild(text);
-    mediaBody.appendChild(h5);
-    mediaBody.appendChild(smallh5);
-    mediaBody.appendChild(p);
-    media.appendChild(mediaBody);
-    panelBody.appendChild(media);
-    panel.appendChild(panelBody);
-    messageList.appendChild(panel);
+    for(var i = 0; i<result[0].messageList.length; i ++){
+      console.log(result[0].messageList[i]);
+      var panel = document.createElement('div');
+      panel.className = "panel panel-default"
+      var panelBody = document.createElement('div');
+      panelBody.className = "panel-body";
+      var panelHeading = document.createElement('div');
+      panelHeading.className = "panel-heading blue-background"
+      var h5 = document.createElement('h5');
+      h5.className = "white"
+      var smallh6 = document.createElement('h6');
+      smallh6.className = "small white";
+      var p = document.createElement('p');
+      var date1 = result[0].messageList[i].date
+      var x = date1.toLocaleString();
+      var handle = document.createTextNode("From: @" + result[0].messageList[i].handle);
+      var text = document.createTextNode(result[0].messageList[i].text);
+      var date = document.createTextNode(x);
+      h5.appendChild(handle);
+      smallh6.appendChild(date);
+      p.appendChild(text);
+      panelHeading.appendChild(h5);
+      panelHeading.appendChild(smallh6);
+      panelBody.appendChild(p);
+      panel.appendChild(panelHeading);
+      panel.appendChild(panelBody);
+      messageList.appendChild(panel);
+    }
+};
+
+function sendMessage(target){
+  var text = messageBox.value;
+  var userHandle = myUser.handle;
+  var parent = target.parentNode.parentNode.parentNode.parentNode.firstChild.nextElementSibling.firstChild.nextSibling.firstChild.lastChild.getElementsByTagName('h1')[0]
+  var messageHandle = parent.dataset.id;
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'updateMessage', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var date = new Date();
+  var x = date.toLocaleString();
+  var myData ={
+    userHandle:userHandle,
+    text:text,
+    messageHandle:messageHandle,
+    date: x
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      updateMessages(messageHandle);
+    }
+  }
+}
+
+function updateMessages(messageHandle){
+  var messageHandle = messageHandle
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/messageList', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  var myData = {
+    userHandle:myUser.handle,
+    messageHandle:messageHandle
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var result = JSON.parse(xhr.responseText)
+      appendMessageList(messageHandle,result);
+    }
   }
 }
 
@@ -1257,6 +1304,8 @@ function myTarget(event){
   }else if(id == 'close'){
     $('#logoutIcon').popover('hide')
     logout();
+  }else if(id == 'submitMessage'){
+    sendMessage(target);
   }
 }
 
@@ -1310,6 +1359,7 @@ function removeMessages(){
   while(element.firstChild){
     element.removeChild(element.firstChild);
   }
+  messages.classname = "hidden";
 }
 
 function showMessages(){
