@@ -25,8 +25,12 @@ var messagesInfo = document.getElementById('messagesInfo')
 var messageBox = document.getElementById('messageBox');
 var submitMessage = document.getElementById('submitMessage');
 var messageList = document.getElementById('messageList');
+var notificationContainer = document.getElementById('notificationContainer');
+var notifications = document.getElementById('notifications')
 var close = document.getElementById('close');
 var logoutIcon = document.getElementById('logoutIcon')
+var notificationNumber = document.getElementById('numberofNotications');
+var messageNumber = document.getElementById('numberOfMessages');
 var myUser = {};
 var myTweets = {};
 var followersInfo = {};
@@ -144,6 +148,8 @@ function getTweets(){
 function appendUserInfo(){
   var user = myUser;
   logoutIcon.setAttribute('src', user.picture);
+  notificationNumber.textContent = myUser.numberOfNotifications;
+  messageNumber.textContent = myUser.numberOfMessages;
   var thumbnail = document.createElement('div')
   thumbnail.className ="thumbnail"
   var caption = document.createElement('div')
@@ -345,11 +351,6 @@ function appendSuggestions(body, dom){
   panelHeading.appendChild(panelText);
   panel1.appendChild(panelHeading);
   for(var i = 0; i<users.length; i++){
-    //var panel = document.createElement('div');
-    //panel.className = "panel panel-default"
-    //var panelHeading = document.createElement('div');
-    //panelHeading.className = "panel-heading"
-    //var panelText = document.createTextNode('Who To Follow');
     var panelBody = document.createElement('div');
     panelBody.className = "panel-body";
     var media = document.createElement('div');
@@ -376,8 +377,6 @@ function appendSuggestions(body, dom){
     var p2 = document.createElement('p');
     var handle = document.createTextNode('@' + users[i].handle)
     var hr = document.createElement('hr')
-    //  var name  = document.createTextNode('');
-    //var tweet = document.createTextNode(innerTweets[i].text)
     button.appendChild(buttonText);
     p2.appendChild(button);
     h5.appendChild(handle);
@@ -387,8 +386,6 @@ function appendSuggestions(body, dom){
     media.appendChild(mediaLeft);
     media.appendChild(mediaBody);
     panelBody.appendChild(media);
-    panelBody.appendChild(hr)
-    //panel.appendChild(panelBody)
     panel1.appendChild(panelBody);
   }
   dom.appendChild(panel1);
@@ -620,6 +617,7 @@ function getSelectedProfile(data, callback){
 function appendSelectedProfile(result, callback){
   userProfile.className = 'hidden container-fluid well'
   selectedProfile.className ="container-fluid well"
+  hideNotifcationsContainer();
   removeSelectedInfo();
   removeSelectedTimline();
   removeSelectedSuggestions();
@@ -1261,6 +1259,43 @@ function removeMessageInfo(){
   }
 }
 
+function appendNotifications(){
+  showNotifcationsContainer();
+  removeNotifcations();
+  for(var i = 0; i <myUser.notifications.length; i++){
+    var x = myUser.notifications[i];
+    var panel = document.createElement('div');
+    panel.className = "panel panel-default"
+    var panelBody = document.createElement('div');
+    panelBody.className = "panel-body";
+    var panelHeading = document.createElement('div');
+    panelHeading.className = "panel-heading grey-background"
+    var pic = document.createElement('img')
+    pic.setAttribute('src', x.picture);
+    pic.setAttribute('height', 30);
+    pic.setAttribute('width', 30);
+    pic.className = "img-rounded float-left"
+    var h5 = document.createElement('h5');
+    h5.className=""
+    var p = document.createElement('p');
+    var handle = document.createTextNode(" From: @" + x.handle);
+    var text = document.createTextNode('@'+x.handle+ ' ' + "favorited your tweet " + "'" + x.text + "'");
+    if(x.retweet ==1){
+      var text = document.createTextNode('@'+x.handle+ ' ' + "retweeted your tweet " + "'" + x.text + "'");
+    }else if(x.mess == 1){
+      var text = document.createTextNode('@'+x.handle+ ' ' + "messaged you " + "'" + x.text + "'");
+    }
+    h5.appendChild(pic);
+    h5.appendChild(handle);
+    p.appendChild(text);
+    panelHeading.appendChild(h5);
+    panelBody.appendChild(p);
+    panel.appendChild(panelHeading);
+    panel.appendChild(panelBody);
+    notifications.appendChild(panel)
+  }
+}
+
 function myTarget(event){
   var ev = event;
   var target = ev.target;
@@ -1322,6 +1357,8 @@ function myTarget(event){
     logout();
   }else if(id == 'submitMessage'){
     sendMessage(target);
+  }else if(id == "userNotifications"){
+    appendNotifications();
   }
 }
 
@@ -1335,6 +1372,7 @@ function findNavParent(target){
 function updateTimeline(){
   userProfile.className = 'container-fluid well'
   selectedProfile.className ="hidden container-fluid well"
+  hideNotifcationsContainer();
   removeTimeline();
   removeUserInfo();
   removeSuggestions();
@@ -1366,7 +1404,26 @@ function showMessagesContainer(){
   landingPage.className = "hidden";
   userProfile.className="hidden";
   selectedProfile.className = "hidden"
+  notificationContainer.className="hidden"
   messagesContainer.className="container-fluid well";
+}
+
+function showNotifcationsContainer(){
+  selectedProfile.className="hidden";
+  userProfile.className = "hidden";
+  messagesContainer.className = "hidden"
+  notificationContainer.className = "container-fluid"
+}
+
+function hideNotifcationsContainer(){
+  notificationContainer.className = "hidden container-fluid"
+}
+
+function removeNotifcations(){
+  var element = notifications;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
 }
 
 function hideMessagesContainer(){
