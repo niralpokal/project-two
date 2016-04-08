@@ -24,7 +24,9 @@ var messages = document.getElementById('messages');
 var messagesInfo = document.getElementById('messagesInfo')
 var messageBox = document.getElementById('messageBox');
 var submitMessage = document.getElementById('submitMessage');
-var messageList = document.getElementById('messageList')
+var messageList = document.getElementById('messageList');
+var close = document.getElementById('close');
+var logoutIcon = document.getElementById('logoutIcon')
 var myUser = {};
 var myTweets = {};
 var followersInfo = {};
@@ -47,6 +49,11 @@ promise.then(function(value){
   myUser = value;
   showDashBoard();
 }, function(reason){});
+
+$('#logoutIcon').popover({
+  html: 'true',
+  content : '<button type="button"  class="btn btn-primary" id="close">Log Out</button>'
+});
 
 loginButton.addEventListener('click',function(){
   $('#login').modal('show')
@@ -117,7 +124,7 @@ function showDashBoard(){
   getTweets();
   appendUserInfo();
   getSuggestions(suggestions);
-}
+};
 
 function getTweets(){
   myTweets.length = 0;
@@ -136,6 +143,7 @@ function getTweets(){
 
 function appendUserInfo(){
   var user = myUser;
+  logoutIcon.setAttribute('src', user.picture);
   var thumbnail = document.createElement('div')
   thumbnail.className ="thumbnail"
   var caption = document.createElement('div')
@@ -1148,6 +1156,48 @@ function appendFavs(body){
   }
 }
 
+function logout(){
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", '/logout', true);
+  xhr.send();
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      goToLanding();
+    }
+  }
+};
+
+function goToLanding(){
+  removeTimeline();
+  removeUserInfo();
+  removeMessages();
+  removeSuggestions();
+  removeSelectedInfo();
+  removeSelectedTimline();
+  removeSelectedSuggestions();
+  removeMessageList();
+  removeMessageInfo();
+  dashboard.className = "hidden";
+  selectedProfile.className = "container-fluid hidden"
+  userProfile.className = "container-fluid well";
+  messagesContainer.className ="container-fluid hidden"
+  landingPage.className = "row-fluid";
+}
+
+function removeMessageList(){
+  var element = messageList;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+}
+
+function removeMessageInfo(){
+  var element = messagesInfo;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+}
+
 function myTarget(event){
   var ev = event;
   var target = ev.target;
@@ -1204,6 +1254,9 @@ function myTarget(event){
     getMessages();
   }else if(theTarget == 'message'){
     getMessageList(target);
+  }else if(id == 'close'){
+    $('#logoutIcon').popover('hide')
+    logout();
   }
 }
 

@@ -412,6 +412,7 @@ app.get('/getTweets', cookieParser(), function(req, res){
       db.close();
       for(var i = 0; i< tweets.length; i++){
         if (user == tweets[i].handle){
+        res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
         res.json(tweets[i]);
         break;
         }
@@ -430,6 +431,7 @@ app.get('/userTimeline', cookieParser(), function(req, res) {
         findTweets(db, user, function(){
           db.close();
           var payload = checkFollowingTweets(user, req.cookies.id);
+          res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
           res.json(payload);
         })
       })
@@ -520,6 +522,7 @@ app.get('/getUpdate', cookieParser(), function(req, res){
       db.close();
       for(var i = 0; i<myUsers.length; i++){
         if(req.cookies.id == myUsers[i].handle){
+          res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
           res.json(myUsers[i]);
           break;
         }
@@ -555,6 +558,7 @@ app.post('/getProfile', jsonParser, function(req, res) {
     findSelectedUser(db, payload, function(){
       db.close();
       var result = checkUser(payload);
+      res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
       res.json(result);
     })
   })
@@ -570,6 +574,7 @@ app.post('/getSelectedTimeline', jsonParser, function(req, res) {
         if(payload.handle == tweets[i].handle){
           var c = [];
           c.push(tweets[i]);
+          res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
           res.json(c);
           break;
         }
@@ -593,6 +598,7 @@ app.post('/followers', jsonParser, function(req, res){
           }
         }
       }
+      res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
       res.json(c);
     })
   })
@@ -648,6 +654,7 @@ app.post('/favs',jsonParser, function(req, res) {
           }
         }
       }
+      res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
       res.json(c);
     })
   })
@@ -795,10 +802,18 @@ app.post('/messageList', jsonParser, function(req, res){
           }
         }
       }
+      res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
       res.json(c);
     })
   })
-})
+});
+
+app.get('/logout', cookieParser(), function(req, res) {
+  res.clearCookie('remember');
+  res.clearCookie('id');
+  res.clearCookie('user');
+  res.sendStatus(200);
+});
 
 var port = process.env.PORT || 8080;
 app.listen(port, function(){});
