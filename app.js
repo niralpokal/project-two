@@ -811,6 +811,7 @@ app.post('/messageList', jsonParser, function(req, res){
     console.log('I am reseting the number of messages');
     var handle = {handle:payload.userHandle};
     db.collection('users').update(handle, {$set:{"numberOfMessages":0}})
+    db.close();
   })
 });
 
@@ -869,7 +870,7 @@ app.get('/logout', cookieParser(), function(req, res) {
   res.sendStatus(200);
 });
 
-app.get('notifications', cookieParser(), function(req, res){
+app.get('/notifications', cookieParser(), function(req, res){
   var user = req.cookies.id;
   MongoClient.connect(url, function(err,db){
     assert.equal(null, err);

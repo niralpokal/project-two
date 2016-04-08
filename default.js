@@ -1295,8 +1295,8 @@ function appendNotifications(){
     panel.appendChild(panelBody);
     notifications.appendChild(panel)
   }
-  var xhr = New XMLHttpRequest();
-  xhr.open('GET', 'notifications', true);
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/notifications', true);
   xhr.send();
   xhr.onload = function(){
     if(xhr.status ===200){
