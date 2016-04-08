@@ -31,6 +31,7 @@ var close = document.getElementById('close');
 var logoutIcon = document.getElementById('logoutIcon')
 var notificationNumber = document.getElementById('numberofNotications');
 var messageNumber = document.getElementById('numberOfMessages');
+var modaltext = document.getElementById('modaltext')
 var myUser = {};
 var myTweets = {};
 var followersInfo = {};
@@ -619,6 +620,48 @@ function makeTweet() {
   }
 }
 
+function makeTweet1() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/makeTweet', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var tweet = modaltext.value;
+  var mentions = [];
+  var mentions2 = []
+  var tags = [];
+  var split  = tweet.split(/\s\w*/);
+  for(var i = 0; i<split.length; i++){
+    if(split[i].indexOf('@') !== -1){
+      mentions.push(split[i]);
+    } else if(split[i].indexOf('#') !== -1){
+      tags.push(split[i]);
+    }
+  }
+  for(var z =0; z < mentions.length; z++){
+    mentions2.push(mentions[z].split(/\@/));
+    mentions2[z].splice(0,1);
+  }
+  mentions.length = 0;
+  for(var y = 0; y < mentions2.length; y++){
+    mentions.push(mentions2[y][0]);
+  }
+  var myData = {
+    name: myUser.name,
+    text: tweet,
+    handle: myUser.handle,
+    tags: tags,
+    mentions: mentions,
+    picture: myUser.picture
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status ==200){
+      document.getElementById('form3').reset();
+      getUpdatedUser();
+    }
+  }
+}
+
 function getSelectedProfile(data, callback){
   var myData = {
     handle: data
@@ -675,7 +718,7 @@ function appendSelectedProfile(result, callback){
   column2.className = "col-xs-6";
   var tweetBtn = document.createElement('a');
   tweetBtn.setAttribute('role', 'button')
-  tweetBtn.setAttribute('data-id', 'tweet')
+  tweetBtn.setAttribute('data-id', 'tweet1')
   var messageBtn = document.createElement('a');
   messageBtn.setAttribute('role', 'button')
   messageBtn.setAttribute('data-id', 'message1')
@@ -1378,6 +1421,7 @@ function myTarget(event){
   var ev = event;
   var target = ev.target;
   var id = target.id
+  var handle;
   console.log(target);
   var theTarget = target.dataset.id;
   if (theTarget == 'follow'){
@@ -1443,6 +1487,12 @@ function myTarget(event){
   }else if(theTarget == 'message1'){
     getMessages();
     getMessageList1(target);
+  }else if(theTarget == 'tweet1'){
+    $('#tweetAt').modal('show')
+    handle = target.parentNode.parentNode.parentNode.firstChild.dataset.id;
+    modaltext.value = ('@'+handle);
+  }else if(id == 'modaltweet'){
+    makeTweet1();
   }
 }
 
