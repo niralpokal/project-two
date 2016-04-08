@@ -337,9 +337,14 @@ function getSuggestions(dom){
 
 function appendSuggestions(body, dom){
   var users = body;
+  var panel1 = document.createElement('div');
+  panel1.className = "panel panel-default"
+  var panelHeading = document.createElement('div');
+  panelHeading.className = "panel-heading blue-background white text-center"
+  var panelText = document.createTextNode('Who To Follow');
+  panelHeading.appendChild(panelText);
+  panel1.appendChild(panelHeading);
   for(var i = 0; i<users.length; i++){
-    var panel = document.createElement('div');
-    panel.className = "panel panel-default"
     var panelBody = document.createElement('div');
     panelBody.className = "panel-body";
     var media = document.createElement('div');
@@ -365,8 +370,7 @@ function appendSuggestions(body, dom){
     var p1 = document.createElement('p');
     var p2 = document.createElement('p');
     var handle = document.createTextNode('@' + users[i].handle)
-    //  var name  = document.createTextNode('');
-    //var tweet = document.createTextNode(innerTweets[i].text)
+    var hr = document.createElement('hr')
     button.appendChild(buttonText);
     p2.appendChild(button);
     h5.appendChild(handle);
@@ -376,9 +380,10 @@ function appendSuggestions(body, dom){
     media.appendChild(mediaLeft);
     media.appendChild(mediaBody);
     panelBody.appendChild(media);
-    panel.appendChild(panelBody)
-    dom.appendChild(panel);
+    panelBody.appendChild(hr)
+    panel1.appendChild(panelBody);
   }
+  dom.appendChild(panel1);
 }
 
 function addFollower(target){
@@ -611,6 +616,7 @@ function appendSelectedProfile(result, callback){
   removeSelectedTimline();
   removeSelectedSuggestions();
   showSelctedSuggestions();
+  hideMessagesContainer();
   var thumbnail = document.createElement('div')
   thumbnail.className ="thumbnail"
   var caption = document.createElement('div')
@@ -798,6 +804,8 @@ function appendMessages(result){
   showMessagesContainer();
   messagesDiv.className="row-fluid"
   removeMessages();
+  removeMessageList();
+  removeMessageInfo();
   for(var i = 0; i < result.length; i++){
     var col = document.createElement('div');
     col.className="col-xs-6 col-md-4"
@@ -1325,11 +1333,10 @@ function updateTimeline(){
   appendUserInfo();
   getUserTimeline();
   getSuggestions(suggestions);
+  hideMessagesContainer();
 }
 
 function showSelctedSuggestions(){
-  var sugg = document.getElementById('suggestionsText');
-  sugg.className = "row text-center"
   userSuggestions.className = "";
 }
 
@@ -1354,12 +1361,16 @@ function showMessagesContainer(){
   messagesContainer.className="container-fluid well";
 }
 
+function hideMessagesContainer(){
+  messagesContainer.className = "hidden"
+}
+
 function removeMessages(){
   var element = messagesDiv;
   while(element.firstChild){
     element.removeChild(element.firstChild);
   }
-  messages.classname = "hidden";
+  messages.className = "hidden";
 }
 
 function showMessages(){
@@ -1390,8 +1401,6 @@ function removeSelectedSuggestions(){
   while(element.firstChild){
     element.removeChild(element.firstChild);
   }
-  var sugg = document.getElementById('suggestionsText');
-  sugg.className = "hidden"
   element.className="hidden";
 };
 

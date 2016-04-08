@@ -43,5 +43,7 @@
   display: inline-block;
   float: none;
 }
-.blue { color: #3498db; }
-.margin { margin-top: 10; }
+.blue { color: #3498db !important; }
+.margin { margin-top: 10 !important; }
+.blue-background { background-color:#3498db !important; }
+.white { color: white !important; }
