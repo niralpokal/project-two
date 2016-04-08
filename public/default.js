@@ -1262,6 +1262,7 @@ function removeMessageInfo(){
 function appendNotifications(){
   showNotifcationsContainer();
   removeNotifcations();
+  notificationNumber.textContent = 0;
   for(var i = 0; i <myUser.notifications.length; i++){
     var x = myUser.notifications[i];
     var panel = document.createElement('div');
@@ -1293,6 +1294,14 @@ function appendNotifications(){
     panel.appendChild(panelHeading);
     panel.appendChild(panelBody);
     notifications.appendChild(panel)
+  }
+  var xhr = New XMLHttpRequest();
+  xhr.open('GET', 'notifications', true);
+  xhr.send();
+  xhr.onload = function(){
+    if(xhr.status ===200){
+      return;
+    }
   }
 }
 

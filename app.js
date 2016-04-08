@@ -806,6 +806,12 @@ app.post('/messageList', jsonParser, function(req, res){
       res.json(c);
     })
   })
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am reseting the number of messages');
+    var handle = {handle:payload.userHandle};
+    db.collection('users').update(handle, {$set:{"numberOfMessages":0}})
+  })
 });
 
 app.post('/updateMessage', jsonParser, function(req, res) {
@@ -862,6 +868,18 @@ app.get('/logout', cookieParser(), function(req, res) {
   res.clearCookie('user');
   res.sendStatus(200);
 });
+
+app.get('notifications', cookieParser(), function(req, res){
+  var user = req.cookies.id;
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null, err);
+    console.log("i am reseting the number of new Notifications");
+    var handle = {handle: user}
+    db.collection('users').update(handle,{ $set: {"numberOfNotifications":0}})
+    db.close();
+    res.sendStatus(200)
+  })
+})
 
 var port = process.env.PORT || 8080;
 app.listen(port, function(){});
