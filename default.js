@@ -267,13 +267,13 @@ function appendUserTimeline(body, dom){
       favIcon.className ="fa fa-heart-o";
       favIcon.setAttribute('data-id', 'addfavorite');
       if(myUser.favs.length != undefined){
-      for(var y = 0; y < myUser.favs.length; y++){
-        if (myUser.favs[y].number == innerTweets[z].number && myUser.favs[y].handle == innerTweets[z].handle){
-          favIcon.className="fa fa-heart";
-          favIcon.setAttribute('data-id', 'unfavorite')
+        for(var y = 0; y < myUser.favs.length; y++){
+          if (myUser.favs[y].number == innerTweets[z].number && myUser.favs[y].handle == innerTweets[z].handle){
+            favIcon.className="fa fa-heart";
+            favIcon.setAttribute('data-id', 'unfavorite')
+          }
         }
       }
-    }
       var retweetIcon = document.createElement('i');
       retweetIcon.className = "fa fa-retweet";
       retweetIcon.setAttribute('data-id', 'addRetweet');
@@ -324,12 +324,12 @@ function appendUserTimeline(body, dom){
         for (var q = 0; q < innerTweets[z].retweets.length; q++){
           if (innerTweets[z].retweets[q].handle == myUser.handle){
             dom.removeChild(dom.lastChild);
-            }
           }
         }
       }
     }
   }
+}
 
 function getSuggestions(dom){
   var xhr = new XMLHttpRequest();
@@ -411,6 +411,26 @@ function addFollower(target){
       getUpdatedUser();
     }
   }
+}
+
+function addFollower1(target){
+  var parent = target.parentNode
+  var toFollow = parent.parentNode.parentNode.getElementsByTagName('h1')[0].dataset.id
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/addFollower', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  var myData = {
+    user:myUser.handle,
+    follow:toFollow
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      getUpdatedUser();
+    }
+  }
+
 }
 
 function removeFollower(target){
@@ -658,13 +678,28 @@ function appendSelectedProfile(result, callback){
   tweetBtn.setAttribute('data-id', 'tweet')
   var messageBtn = document.createElement('a');
   messageBtn.setAttribute('role', 'button')
-  messageBtn.setAttribute('data-id', 'message')
+  messageBtn.setAttribute('data-id', 'message1')
   var tweetBtnText = document.createTextNode('Tweet');
   var messageBtnText = document.createTextNode('Message');
+  var followBtn = document.createElement('a')
+  followBtn.setAttribute('role', 'button')
+  followBtn.setAttribute('data-id', 'follow1');
+  var followBtnText = document.createTextNode('Follow');
+  followBtn.appendChild(followBtnText);
   tweetBtn.appendChild(tweetBtnText);
   messageBtn.appendChild(messageBtnText);
   column1.appendChild(tweetBtn);
-  column2.appendChild(messageBtn);
+  column2.appendChild(followBtn);
+  for(var i= 0; i < myUser.following.length; i++){
+    if (result.handle == myUser.following[i].handle){
+      column2.replaceChild(messageBtn, followBtn);
+      break;
+    }else if(result.handle == myUser.handle){
+      column1.removeChild(column1.firstChild);
+      column2.removeChild(column2.firstChild);
+      break;
+    }
+  }
   buttonDiv.appendChild(column1);
   buttonDiv.appendChild(column2);
   userName.appendChild(userNameText);
@@ -749,7 +784,7 @@ function getSelectedTimeline(result){
   xhr.open('POST', '/getSelectedTimeline', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   var myData = {
-  handle: result.handle
+    handle: result.handle
   }
   var payload = JSON.stringify(myData);
   xhr.send(payload);
@@ -853,8 +888,8 @@ function appendMessages(result){
     caption.appendChild(userText);
     caption.appendChild(messageBtn);
     if(myUser.handle == result[i].handle){
-        caption.removeChild(caption.lastChild);
-      }
+      caption.removeChild(caption.lastChild);
+    }
     caption.appendChild(br);
     thumbnail.appendChild(picture);
     thumbnail.appendChild(caption);
@@ -879,6 +914,27 @@ function getMessageList(target){
   xhr.onload = function(){
     if(xhr.status === 200){
       var result = JSON.parse(xhr.responseText);
+      appendMessageList(messageHandle,result);
+    }
+  }
+}
+
+function getMessageList1(target){
+  var messageHandle = target.parentNode.parentNode.parentNode.firstChild.dataset.id
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/messageList', true);
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  var myData = {
+    userHandle:myUser.handle,
+    messageHandle:messageHandle
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status === 200){
+      var result = JSON.parse(xhr.responseText);
+      console.log(result);
+      showMessagesContainer();
       appendMessageList(messageHandle,result);
     }
   }
@@ -924,36 +980,36 @@ function appendMessageList(messageHandle,result){
     }
   }
   var reverse = result[0].messageList.reverse();
-    for(var i = 0; i<reverse.length; i ++){
-      var panel = document.createElement('div');
-      panel.className = "panel panel-default"
-      var panelBody = document.createElement('div');
-      panelBody.className = "panel-body";
-      var panelHeading = document.createElement('div');
-      panelHeading.className = "panel-heading blue-background"
-      var h5 = document.createElement('h5');
-      h5.className = "white"
-      var smallh6 = document.createElement('h6');
-      smallh6.className = "small white";
-      var p = document.createElement('p');
-      var date1 = reverse[i].date
-      var x = date1.toLocaleString();
-      var handle = document.createTextNode("From: @" + reverse[i].handle);
-      var text = document.createTextNode(reverse[i].text);
-      if (reverse[i].handle == myUser.handle) {
-        panelHeading.className = "panel-heading user-message"
-      }
-      var date = document.createTextNode(x);
-      h5.appendChild(handle);
-      smallh6.appendChild(date);
-      p.appendChild(text);
-      panelHeading.appendChild(h5);
-      panelHeading.appendChild(smallh6);
-      panelBody.appendChild(p);
-      panel.appendChild(panelHeading);
-      panel.appendChild(panelBody);
-      messageList.appendChild(panel);
+  for(var i = 0; i<reverse.length; i ++){
+    var panel = document.createElement('div');
+    panel.className = "panel panel-default"
+    var panelBody = document.createElement('div');
+    panelBody.className = "panel-body";
+    var panelHeading = document.createElement('div');
+    panelHeading.className = "panel-heading blue-background"
+    var h5 = document.createElement('h5');
+    h5.className = "white"
+    var smallh6 = document.createElement('h6');
+    smallh6.className = "small white";
+    var p = document.createElement('p');
+    var date1 = reverse[i].date
+    var x = date1.toLocaleString();
+    var handle = document.createTextNode("From: @" + reverse[i].handle);
+    var text = document.createTextNode(reverse[i].text);
+    if (reverse[i].handle == myUser.handle) {
+      panelHeading.className = "panel-heading user-message"
     }
+    var date = document.createTextNode(x);
+    h5.appendChild(handle);
+    smallh6.appendChild(date);
+    p.appendChild(text);
+    panelHeading.appendChild(h5);
+    panelHeading.appendChild(smallh6);
+    panelBody.appendChild(p);
+    panel.appendChild(panelHeading);
+    panel.appendChild(panelBody);
+    messageList.appendChild(panel);
+  }
 };
 
 function sendMessage(target){
@@ -1125,8 +1181,8 @@ function appendFollowing(result){
     caption.appendChild(userText);
     caption.appendChild(followingBtn);
     if(myUser.handle == result[i].handle){
-        caption.removeChild(caption.lastChild);
-      }
+      caption.removeChild(caption.lastChild);
+    }
     caption.appendChild(br);
     thumbnail.appendChild(picture);
     thumbnail.appendChild(caption);
@@ -1181,9 +1237,9 @@ function appendFavs(body){
             retweetIcon.className = "fa fa-retweet blue";
             retweetIcon.setAttribute('data-id', 'removeRetweet');
             handle = document.createTextNode('You retweeted '+'@' + innerTweets[z].handle)
-            }
           }
         }
+      }
       var fav = document.createElement('li');
       fav.setAttribute('role', 'button');
       var numberOfRetweetsp = document.createElement('a');
@@ -1382,6 +1438,11 @@ function myTarget(event){
     document.getElementById('form4').reset();
   }else if(id == "userNotifications"){
     appendNotifications();
+  }else if(theTarget == 'follow1'){
+    addFollower1(target);
+  }else if(theTarget == 'message1'){
+    getMessages();
+    getMessageList1(target);
   }
 }
 
