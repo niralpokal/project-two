@@ -161,7 +161,7 @@ function appendUserInfo(){
   picture.setAttribute('class', "img-responsive")
   picture.setAttribute('data-id', 'thumbnailProfile')
   var userName = document.createElement('h1');
-  userName.className ="text-center"
+  userName.className ="text-center margin"
   userName.setAttribute('data-id', myUser.handle)
   var userHandle = document.createElement('p');
   userHandle.className = "text-center"
@@ -270,7 +270,7 @@ function appendUserTimeline(body, dom){
       if(myUser.favs.length != undefined){
         for(var y = 0; y < myUser.favs.length; y++){
           if (myUser.favs[y].number == innerTweets[z].number && myUser.favs[y].handle == innerTweets[z].handle){
-            favIcon.className="fa fa-heart";
+            favIcon.className="fa fa-heart red";
             favIcon.setAttribute('data-id', 'unfavorite')
           }
         }
@@ -371,7 +371,7 @@ function appendSuggestions(body, dom){
     picture.setAttribute('height', "48");
     picture.setAttribute('data-id', 'profile')
     var button = document.createElement('button');
-    button.className = "btn btn-default"
+    button.className = "btn blue-background white"
     button.setAttribute('data-id', 'follow');
     var buttonText = document.createTextNode('Follow')
     var h5 = document.createElement('h5');
@@ -456,7 +456,7 @@ function removeFollower(target){
 }
 
 function addFavorite(target){
-  target.className = "fa fa-heart"
+  target.className = "fa fa-heart red"
   target.setAttribute('data-id', 'unfavorite')
   var tweetNumber = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.id
   var tweetText = target.parentNode.parentNode.parentNode.getElementsByTagName('p')[0].dataset.tweet
@@ -695,13 +695,13 @@ function appendSelectedProfile(result, callback){
   var picture = document.createElement('img');
   picture.setAttribute('src', result.picture);
   picture.setAttribute('alt', "Profile Pic")
-  picture.setAttribute('class', "img-rounded")
   picture.setAttribute('width', 150);
   picture.setAttribute('height', 150);
   picture.setAttribute('data-id', 'thumbnailProfile')
+  picture.className = 'img-rounded margin'
   var br = document.createElement('br');
   var userName = document.createElement('h1');
-  userName.className ="text-center";
+  userName.className ="text-center margin";
   userName.setAttribute('data-id', result.handle)
   var userHandle = document.createElement('p');
   userHandle.className = "text-center";
@@ -737,10 +737,6 @@ function appendSelectedProfile(result, callback){
     if (result.handle == myUser.following[i].handle){
       column2.replaceChild(messageBtn, followBtn);
       break;
-    }else if(result.handle == myUser.handle){
-      column1.removeChild(column1.firstChild);
-      column2.removeChild(column2.firstChild);
-      break;
     }
   }
   buttonDiv.appendChild(column1);
@@ -753,6 +749,10 @@ function appendSelectedProfile(result, callback){
   caption.appendChild(userText);
   caption.appendChild(br);
   caption.appendChild(buttonDiv);
+  if(result.handle == myUser.handle){
+    caption.removeChild(caption.lastChild);
+    caption.removeChild(caption.lastChild);
+  }
   thumbnail.appendChild(picture);
   thumbnail.appendChild(caption);
   var selectedInfo = document.getElementById('selectedInfo');
@@ -1029,25 +1029,28 @@ function appendMessageList(messageHandle,result){
     var panelBody = document.createElement('div');
     panelBody.className = "panel-body";
     var panelHeading = document.createElement('div');
-    panelHeading.className = "panel-heading blue-background"
+    panelHeading.className = "panel-heading grey-background"
     var h5 = document.createElement('h5');
-    h5.className = "white"
-    var smallh6 = document.createElement('h6');
-    smallh6.className = "small white";
+    h5.className="low-top"
+    var smallp = document.createElement('p');
+    smallp.className = "small low-margin";
     var p = document.createElement('p');
+    p.className="lower-padding"
     var date1 = reverse[i].date
     var x = date1.toLocaleString();
     var handle = document.createTextNode("From: @" + reverse[i].handle);
     var text = document.createTextNode(reverse[i].text);
     if (reverse[i].handle == myUser.handle) {
-      panelHeading.className = "panel-heading user-message"
+      panelHeading.className = "panel-heading blue-background";
+      h5.className = "white low-top ";
+      smallp.className = "small white low-margin";
     }
     var date = document.createTextNode(x);
     h5.appendChild(handle);
-    smallh6.appendChild(date);
+    smallp.appendChild(date);
     p.appendChild(text);
     panelHeading.appendChild(h5);
-    panelHeading.appendChild(smallh6);
+    panelHeading.appendChild(smallp);
     panelBody.appendChild(p);
     panel.appendChild(panelHeading);
     panel.appendChild(panelBody);
@@ -1142,16 +1145,17 @@ function appendFollowers(result){
     var userNameText = document.createTextNode(captilizeFirstLetter(result[i].name));
     var userHandleText = document.createTextNode('@'+result[i].handle);
     var userTextNode = document.createTextNode(captilizeFirstLetter(result[i].text));
-    var followingBtn = document.createElement('a');
-    followingBtn.setAttribute('role', 'button')
+    var followingBtn = document.createElement('button');
     followingBtn.setAttribute('data-id', 'unfollow')
+    followingBtn.className="btn"
     var followingText = document.createTextNode('Unfollow');
-    followingText.className="text-muted small text-center";
-    var followBtn = document.createElement('a');
-    followBtn.setAttribute('role', 'button')
+    followingText.className="text-muted white small text-center";
+    var followBtn = document.createElement('button');
+
     followBtn.setAttribute('data-id', 'follow')
+    followBtn.className = "btn btn-primary"
     var followText = document.createTextNode('Follow');
-    followText.className="text-muted small text-center";
+    followText.className="text-muted white small text-center";
     followBtn.appendChild(followText)
     followingBtn.appendChild(followingText)
     userName.appendChild(userNameText);
@@ -1210,11 +1214,11 @@ function appendFollowing(result){
     var userNameText = document.createTextNode(captilizeFirstLetter(result[i].name));
     var userHandleText = document.createTextNode('@'+result[i].handle);
     var userTextNode = document.createTextNode(captilizeFirstLetter(result[i].text));
-    var followingBtn = document.createElement('a');
-    followingBtn.setAttribute('role', 'button')
+    var followingBtn = document.createElement('button');
     followingBtn.setAttribute('data-id', 'unfollow')
+    followingBtn.className="btn"
     var followingText = document.createTextNode('Unfollow');
-    followingText.className="text-muted small text-center";
+    followingText.className="text-muted white small text-center";
     followingBtn.appendChild(followingText)
     userName.appendChild(userNameText);
     userHandle.appendChild(userHandleText);
@@ -1269,7 +1273,7 @@ function appendFavs(body){
       var handle = document.createTextNode('@' + innerTweets[z].handle)
       var tweet = document.createTextNode(innerTweets[z].text);
       var favIcon = document.createElement('i');
-      favIcon.className ="fa fa-heart";
+      favIcon.className ="fa fa-heart red";
       favIcon.setAttribute('data-id', 'unfavorite');
       var retweetIcon = document.createElement('i');
       retweetIcon.className = "fa fa-retweet";
@@ -1382,14 +1386,14 @@ function appendNotifications(){
         var panelBody = document.createElement('div');
         panelBody.className = "panel-body";
         var panelHeading = document.createElement('div');
-        panelHeading.className = "panel-heading grey-background"
+        panelHeading.className = "panel-heading blue-background"
         var pic = document.createElement('img')
         pic.setAttribute('src', x.picture);
         pic.setAttribute('height', 30);
         pic.setAttribute('width', 30);
         pic.className = "img-rounded float-left"
         var h5 = document.createElement('h5');
-        h5.className=""
+        h5.className="white"
         var p = document.createElement('p');
         var handle = document.createTextNode(" From: @" + x.handle);
         var text = document.createTextNode('@'+x.handle+ ' ' + "favorited your tweet " + "'" + x.text + "'");

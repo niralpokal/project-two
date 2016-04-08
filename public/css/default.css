@@ -9,6 +9,7 @@
   z-index: 1;
 
  }
+
 #navbar {
   margin-bottom: 0;
   background: transparent;
@@ -25,9 +26,10 @@
 #loginButton { margin-right: 5px; }
 #signUpButton {margin-right: 5px; }
 #userNavbar{
-  background-color: rgb(2, 117, 216);
-  border-color: rgb(2, 117, 216);
+  background: linear-gradient(to left, #00d2ff , #3a7bd5);
+  border-color: linear-gradient(to left, #00d2ff , #3a7bd5);
   margin-bottom: 0;
+  height:60px;
 }
 #userNavSearch{ padding-top: 7px; }
 #userHome { color: white; }
@@ -44,8 +46,25 @@
   float: none;
 }
 .blue { color: #3498db !important; }
-.margin { margin-top: 10 !important; }
+.red { color: #EB0000 !important; }
+.margin { margin-top: 10px !important; }
 .blue-background { background-color:#3498db !important; }
 .white { color: white !important; }
 .grey-background {background-color: #C0C0C0 !important; }
 .user-message {background-color: #ffaa80 !important;}
+.img-responsive {margin-top: 10px !important; }
+.white-background { background-color: #E1E1E1 !important; }
+
+.low-margin {
+  margin-top: 3px !important;
+  margin-bottom: 0 !important;
+}
+.low-top {
+  margin-top: 5px !important;
+  margin-bottom: 2px !important;
+}
+.lower-padding{
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  margin-bottom: 0 !important;
+}
