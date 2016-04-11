@@ -51,7 +51,7 @@
 .blue-background { background-color:#3498db !important; }
 .lightblue-background { background-color: #00a8cc !important; }
 .white { color: white !important; }
-.grey-background {background-color: #C0C0C0 !important; }
+.grey-background {background-color: #dfdfdf !important; }
 .user-message {background-color: #ffaa80 !important;}
 .img-responsive {margin-top: 10px !important; }
 .white-background { background-color: #E1E1E1 !important; }
@@ -68,4 +68,16 @@
   padding-top: 10px !important;
   padding-bottom: 10px !important;
   margin-bottom: 0 !important;
+}
+.margin-both{
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+}
+.rounded {border-radius: 5px !important;}
+.bottom-border {
+  border-bottom-color: #dfdfdf;
+  border-style: solid;
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }

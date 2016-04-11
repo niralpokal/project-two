@@ -345,6 +345,8 @@ function getSuggestions(dom){
 }
 
 function appendSuggestions(body, dom){
+  removeSuggestions();
+  removeSelectedSuggestions();
   var users = body;
   var panel1 = document.createElement('div');
   panel1.className = "panel panel-default"
@@ -355,7 +357,7 @@ function appendSuggestions(body, dom){
   panel1.appendChild(panelHeading);
   for(var i = 0; i<users.length; i++){
     var panelBody = document.createElement('div');
-    panelBody.className = "panel-body";
+    panelBody.className = "panel-body bottom-border";
     var media = document.createElement('div');
     media.className = "media";
     var mediaLeft = document.createElement('div');
@@ -1130,13 +1132,13 @@ function appendFollowers(result){
     var picture = document.createElement('img');
     picture.setAttribute('src', result[i].picture);
     picture.setAttribute('alt', "Profile Pic")
-    picture.setAttribute('class', "img-rounded")
     picture.setAttribute('width', 60);
     picture.setAttribute('height', 60);
     picture.setAttribute('data-id', 'thumbnailProfile')
+    picture.className = 'img-rounded margin'
     var br = document.createElement('br');
     var userName = document.createElement('h1');
-    userName.className ="text-center";
+    userName.className ="text-center margin";
     var userHandle = document.createElement('p');
     userName.setAttribute('data-id', result[i].handle)
     userHandle.className = "text-center";
@@ -1199,13 +1201,13 @@ function appendFollowing(result){
     var picture = document.createElement('img');
     picture.setAttribute('src', result[i].picture);
     picture.setAttribute('alt', "Profile Pic")
-    picture.setAttribute('class', "img-rounded")
     picture.setAttribute('width', 60);
     picture.setAttribute('height', 60);
     picture.setAttribute('data-id', 'thumbnailProfile');
+    picture.className = 'img-rounded margin'
     var br = document.createElement('br');
     var userName = document.createElement('h1');
-    userName.className ="text-center";
+    userName.className ="text-center margin";
     var userHandle = document.createElement('p');
     userName.setAttribute('data-id', result[i].handle)
     userHandle.className = "text-center";
@@ -1386,14 +1388,14 @@ function appendNotifications(){
         var panelBody = document.createElement('div');
         panelBody.className = "panel-body";
         var panelHeading = document.createElement('div');
-        panelHeading.className = "panel-heading lightblue-background"
+        panelHeading.className = "panel-heading grey-background"
         var pic = document.createElement('img')
         pic.setAttribute('src', x.picture);
         pic.setAttribute('height', 30);
         pic.setAttribute('width', 30);
         pic.className = "img-rounded float-left"
         var h5 = document.createElement('h5');
-        h5.className="white"
+        h5.className=""
         var p = document.createElement('p');
         var handle = document.createTextNode(" From: @" + x.handle);
         var text = document.createTextNode('@'+x.handle+ ' ' + "favorited your tweet " + "'" + x.text + "'");
