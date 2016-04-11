@@ -57,7 +57,7 @@ promise.then(function(value){
 
 $('#logoutIcon').popover({
   html: 'true',
-  content : '<button type="button"  class="btn btn-primary" id="close">Log Out</button>'
+  content : '<button type="button"  class="btn blue-background white" id="close">Log Out</button>'
 });
 
 loginButton.addEventListener('click',function(){
@@ -240,7 +240,7 @@ function appendUserTimeline(body, dom){
     var img = body[i].picture;
     for(var z = 0; z <innerTweets.length; z++){
       var panel = document.createElement('div');
-      panel.className = "panel panel-default"
+      panel.className = "panel panel-default no-bottom-margin"
       var panelBody = document.createElement('div');
       panelBody.className = "panel-body";
       var media = document.createElement('div');
@@ -258,6 +258,7 @@ function appendUserTimeline(body, dom){
       picture.setAttribute('data-id', 'profile')
       var h5 = document.createElement('h5');
       h5.setAttribute('data-id', innerTweets[z].handle)
+      h5.className="media-heading margin-bottom"
       var p1 = document.createElement('p');
       var p2 = document.createElement('p');
       p2.setAttribute('data-id', innerTweets[z].number)
@@ -357,7 +358,7 @@ function appendSuggestions(body, dom){
   panel1.appendChild(panelHeading);
   for(var i = 0; i<users.length; i++){
     var panelBody = document.createElement('div');
-    panelBody.className = "panel-body bottom-border";
+    panelBody.className = "panel-body bottom-border lower-padding";
     var media = document.createElement('div');
     media.className = "media";
     var mediaLeft = document.createElement('div');
@@ -658,7 +659,8 @@ function makeTweet1() {
   xhr.send(payload);
   xhr.onload = function(){
     if(xhr.status ==200){
-      document.getElementById('form3').reset();
+      document.getElementById('form5').reset();
+      $('#tweetAt').modal('toggle');
       getUpdatedUser();
     }
   }
@@ -818,8 +820,6 @@ function appendSelectedProfile(result, callback){
   selectedNav.appendChild(followersLi);
   selectedNav.appendChild(followingLi);
   selectedNav.appendChild(favsLi);
-  removeSelectedSuggestions();
-  showSelctedSuggestions();
   getSuggestions(userSuggestions);
   callback(result);
 }
@@ -904,13 +904,13 @@ function appendMessages(result){
     var picture = document.createElement('img');
     picture.setAttribute('src', result[i].picture);
     picture.setAttribute('alt', "Profile Pic")
-    picture.setAttribute('class', "img-rounded")
     picture.setAttribute('width', 75);
     picture.setAttribute('height', 75);
     picture.setAttribute('data-id', 'thumbnailProfile');
+    picture.className = "img-rounded margin"
     var br = document.createElement('br');
     var userName = document.createElement('h1');
-    userName.className ="text-center";
+    userName.className ="text-center low-margin";
     var userHandle = document.createElement('p');
     userName.setAttribute('data-id', result[i].handle)
     userHandle.className = "text-center small";
@@ -919,9 +919,9 @@ function appendMessages(result){
     var userNameText = document.createTextNode(captilizeFirstLetter(result[i].name));
     var userHandleText = document.createTextNode('@'+result[i].handle);
     var userTextNode = document.createTextNode(captilizeFirstLetter(result[i].text));
-    var messageBtn = document.createElement('a');
-    messageBtn.setAttribute('role', 'button')
+    var messageBtn = document.createElement('btn');
     messageBtn.setAttribute('data-id', 'message')
+    messageBtn.className="btn blue-background white"
     var messageText = document.createTextNode('Message');
     messageText.className="text-muted small text-center";
     messageBtn.appendChild(messageText)
@@ -1122,6 +1122,7 @@ function getFavs(result){
 function appendFollowers(result){
   removeSelectedTimline();
   removeSelectedSuggestions();
+  hideSelectedSuggestions();
   for(var i = 0; i < result.length; i++){
     var col = document.createElement('div');
     col.className="col-xs-6 col-md-4"
@@ -1138,7 +1139,7 @@ function appendFollowers(result){
     picture.className = 'img-rounded margin'
     var br = document.createElement('br');
     var userName = document.createElement('h1');
-    userName.className ="text-center margin";
+    userName.className ="text-center low-margin";
     var userHandle = document.createElement('p');
     userName.setAttribute('data-id', result[i].handle)
     userHandle.className = "text-center";
@@ -1207,7 +1208,7 @@ function appendFollowing(result){
     picture.className = 'img-rounded margin'
     var br = document.createElement('br');
     var userName = document.createElement('h1');
-    userName.className ="text-center margin";
+    userName.className ="text-center low-margin";
     var userHandle = document.createElement('p');
     userName.setAttribute('data-id', result[i].handle)
     userHandle.className = "text-center";
@@ -1499,6 +1500,8 @@ function myTarget(event){
     modaltext.value = ('@'+handle);
   }else if(id == 'modaltweet'){
     makeTweet1();
+  }else if(id=='navTweet'){
+    $('#tweetAt').modal('show');
   }
 }
 
@@ -1606,8 +1609,11 @@ function removeSelectedSuggestions(){
   while(element.firstChild){
     element.removeChild(element.firstChild);
   }
-  element.className="hidden";
 };
+
+function hideSelectedSuggestions(){
+  userSuggestions.className="hidden"
+}
 
 function removeSelectedTimline(){
   var element = selectedTimeline;

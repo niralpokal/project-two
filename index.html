@@ -23,7 +23,7 @@
         <p class="lead">Get the latest updates and information from people in real-time!</p>
       </div>
     </div>
-    <nav class="navbar navbar-default navbar-fixed">
+  <!--  <nav class="navbar navbar-default navbar-fixed">
       <div class="row-fluid">
         <div class="btn-group btn-group-lg btn-group-justified" id="home-btn-group" role="group" aria-label="Toolbar with button groups">
           <a role="button" class="btn btn-secondary" id="homeSearch">Search</a>
@@ -33,7 +33,7 @@
           <a role="button" class="btn btn-secondary" id="homeEntertainment">Entertainment</a>
         </div>
       </div>
-    </nav>
+    </nav>-->
   </div>
   <div class="modal fade" tabindex="-1" id="sign-up" role="dialog">
     <div class="modal-dialog">
@@ -91,22 +91,22 @@
       </div>
     </div>
     <div class="hidden row-fluid" id="dashboard">
-      <nav class="navbar navbar-default navbar-static-top" id="userNavbar">
+      <nav class="navbar navbar-default navbar-fixed-top" id="userNavbar">
         <div class="container">
           <div class="row-fluid">
             <ul class="nav navbar-nav">
               <li><a role="button" id="userHome">Home</a></li>
-              <li><a role="button" id="userMoments">Moments</a></li>
               <li><a role="button" id="userNotifications">Notifications <span class="badge" id="numberofNotications"></span></a></li>
               <li><a role="button" id="userMessages">Messsages <span class="badge" id="numberOfMessages"></span></a></li>
             </ul>
-            <form class="form-inline pull-right" id="userNavSearch">
+            <form class="form-inline navbar-right" id="userNavSearch">
               <label for="searchBar"></label>
               <input class="form-control" id="searchBar" type="text" form="form1" placeholder="Search" value="">
               <button class="btn white blue-background" id="userNavSearchBtn" type="click">Search</button>
               <img id="logoutIcon" tabindex="0" role="button" class="img-rounded" height="30" width="30" data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-content=""></img>
-            </div>
-          </form>
+              <button id="navTweet" type="button" class ="btn btn-default navbar-btn"><i class="fa fa-twitter blue" aria-hidden="true"></i> Tweet!</button>
+            </form>
+          </div>
         </div>
       </nav>
       <div id="selectedProfile" class="container-fluid hidden">
@@ -142,14 +142,14 @@
         </div>
         <div class="col-xs-6 col-md-6">
           <div class="row grey-background rounded">
-            <div class="col-xs-offset-1 col-xs-10 col-md-offset-1  col-md-10 margin-both">
+            <div class="col-xs-offset-0 col-xs-12 col-md-offset-0  col-md-12 margin-both">
             <form id="form3">
               <textarea class="form-control" rows="3" id="tweetBox"></textarea>
               <button class="btn blue-background white pull-right" type="button" id="submitTweet">Tweet</button>
             </form>
           </div>
         </div>
-        <br>
+        <hr>
           <div class="row" id="timeline"></div>
         </div>
         <div class="col-xs-3 col-md-3">
@@ -166,11 +166,13 @@
             <div class="row-fluid" id="messagesInfo"></div>
           </div>
           <div class="col-xs-6 col-md-6">
-            <div class="row">
-              <form id="form4">
-                <textarea class="form-control" rows="3" id="messageBox"></textarea>
-                <button class="btn white blue-background pull-right" type="button" id="submitMessage">Send</button>
-              </form>
+            <div class="row grey-background rounded">
+              <div class="col-xs-offset-0 col-xs-12 col-md-offset-0  col-md-12 margin-both">
+                <form id="form4">
+                  <textarea class="form-control" rows="3" id="messageBox"></textarea>
+                  <button class="btn white blue-background pull-right" type="button" id="submitMessage">Send</button>
+                </form>
+              </div>
             </div>
             <hr>
             <div class="row" id="messageList"></div>
@@ -199,12 +201,12 @@
             <h4 class="modal-title">Tweet</h4>
         </div>
         <div class="modal-body">
-          <form>
+          <form id='form5'>
             <textarea class="form-control" rows="3" id="modaltext"></textarea>
           </form>
       </div>
       <div class="modal-footer">
-        <button id="modaltweet" type="button" class="btn btn-primary">Tweet</button>
+        <button id="modaltweet" type="button" class="btn blue-background white">Tweet</button>
         </div>
       </div><
     </div>

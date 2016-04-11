@@ -31,7 +31,7 @@
   margin-bottom: 0;
   height:60px;
 }
-#userNavSearch{ padding-top: 7px; }
+#navTweet {margin-left: 10px; }
 #userHome { color: white; }
 #userMoments { color: white; }
 #userNotifications { color: white; }
@@ -55,7 +55,7 @@
 .user-message {background-color: #ffaa80 !important;}
 .img-responsive {margin-top: 10px !important; }
 .white-background { background-color: #E1E1E1 !important; }
-
+.margin-bottom { margin-bottom: 10px !important;}
 .low-margin {
   margin-top: 3px !important;
   margin-bottom: 0 !important;
@@ -76,8 +76,15 @@
 .rounded {border-radius: 5px !important;}
 .bottom-border {
   border-bottom-color: #dfdfdf;
+  border-bottom-width: 2px;
   border-style: solid;
   border-top: none;
   border-left: none;
   border-right: none;
 }
+.low-margin {
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+}
+.no-bottom-margin { margin-bottom: 0 !important;}
+body { padding-top: 60px; }
