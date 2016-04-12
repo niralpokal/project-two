@@ -1,8 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
-var Twitter = require('twitter');
-var env = require('var');
+//var Twitter = require('twitter');
+//var env = require('var');
 var app = express();
 var jsonParser = bodyParser.json();
 var MongoClient = require('mongodb').MongoClient;
@@ -16,7 +16,6 @@ var myUsers= [];
 var globalUsers =[]
 var suggestions = [];
 var tweets= [];
-var userNumber = 0;
 var x;
 
 function User(user){
@@ -48,7 +47,7 @@ function Tweet(tweet){
   this.numberOfFavs = 0
   this.retweets = [];
   this.numberOfRetweets = 0;
-  this.tags = tweet.tag;
+  this.tags = tweet.tags;
   this.mentions = tweet.mentions;
   this.picture = tweet.picture;
   this.number = Math.random();
@@ -617,13 +616,11 @@ app.post('/followers', jsonParser, function(req, res){
 app.post('/signup', jsonParser, function(req,res){
   var neophite = new User(req.body);
   myUsers.push(neophite);
-  userNumber ++;
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('I added a new user to the database');
     insertUser(db, neophite, function(){
       db.close();
-      console.log(x);
       res.cookie('user', x.ops[0]._id);
       res.cookie('id', neophite.handle);
       res.cookie('remember', true, {expires: new Date(Date.now()+ 900000)})
@@ -889,6 +886,54 @@ app.get('/notifications', cookieParser(), function(req, res){
     db.collection('users').update(handle,{ $set: {"numberOfNotifications":0}})
     db.close();
     res.sendStatus(200);
+  })
+})
+
+app.post('/search', jsonParser, function(req, res){
+  var payload = req.body;
+  var c = [];
+  var t = [];
+  console.log(payload);
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am searching users');
+    findUsers(db, payload, function(){
+      db.close();
+      for(var i = 0; i < payload.people.length; i++){
+        for(var z= 0; z<globalUsers.length; z ++){
+          if(payload.people[i] == globalUsers[z].handle){
+            c.push(globalUsers[z])
+          }
+        }
+      }
+    })
+  })
+  MongoClient.connect(url, function(err,db){
+    assert.equal(null,err);
+    console.log('I am searching tweets');
+    findTweets(db, payload, function(){
+      db.close();
+      for(var i = 0; i < payload.tags.length; i++){
+        for(var z= 0; z<tweets.length; z ++){
+          for(var q =0; q<tweets[z].tweets.length;q++){
+            if(tweets[z].tweets[q].tags != null){
+              if(typeof(tweets[z].tweets[q].tags.length) != undefined){
+                for(var y = 0; y<tweets[z].tweets[q].tags.length; y++){
+                  if(payload.tags[i] == tweets[z].tweets[q].tags[y]){
+                    t.push(tweets[z].tweets[q]);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      var myData = {
+        users:c,
+        tweets:t
+      }
+      res.json(myData);
+    })
   })
 })
 
