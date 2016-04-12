@@ -1,8 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
-//var Twitter = require('twitter');
-//var env = require('var');
 var app = express();
 var jsonParser = bodyParser.json();
 var MongoClient = require('mongodb').MongoClient;
@@ -52,22 +50,6 @@ function Tweet(tweet){
   this.picture = tweet.picture;
   this.number = Math.random();
 }
-
-/*var client = new Twitter({
-  consumer_key: process.env.TWITTER_CONSUMER_KEY,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
-});*/
-
-/*client.stream('statuses/filter', {track: 'javascript'}, function(stream) {
-stream.on('data', function(tweet) {
-console.log(tweet.text);
-});
-stream.on('error', function(error) {
-throw error;
-});
-});*/
 
 function checkLogin(check){
   for(var i= 0; i< myUsers.length; i++){
@@ -186,7 +168,6 @@ function updateTweets(db, chirp, callback){
       text: chirp.text,
       men: 1
     }
-    console.log(handlex);
     bulk.find(handlex).update({$push: { "notifications": notification }})
     bulk.find(handlex).update({$inc: { "numberOfNotifications":1 }})
     i++
@@ -376,7 +357,6 @@ app.get('/home', cookieParser(), function(req,res){
   if(req.cookies.remember == 'true'){
     MongoClient.connect(url, function(err,db){
       assert.equal(null,err);
-      console.log('I added a new user to the database');
       findUser(db, req.cookies, function(){
         db.close();
         for(var i= 0; i< myUsers.length; i++){
@@ -396,7 +376,6 @@ app.post('/login', jsonParser, function(req, res) {
   var payload = req.body
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('finding a user');
     findUser(db, payload, function(){
       db.close();
       login(res,payload);
@@ -408,7 +387,6 @@ app.get('/getTweets', cookieParser(), function(req, res){
   var user = req.cookies.id;
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('Finding tweets in the database');
     findTweets(db, user, function(){
       db.close();
       for(var i = 0; i< tweets.length; i++){
@@ -428,7 +406,6 @@ app.get('/userTimeline', cookieParser(), function(req, res) {
       var user = myUsers[i].following;
       MongoClient.connect(url, function(err,db){
         assert.equal(null,err);
-        console.log('Finding tweets in the database');
         findTweets(db, user, function(){
           db.close();
           var payload = checkFollowingTweets(user, req.cookies.id);
@@ -447,7 +424,6 @@ app.get('/suggestions', cookieParser(), function(req, res) {
       var user = myUsers[i];
       MongoClient.connect(url, function(err,db){
         assert.equal(null,err);
-        console.log('Finding suggestions');
         findSuggestions(db,user,function(){
           db.close();
           var payload = checkSuggestions(user);
@@ -481,7 +457,6 @@ app.post('/addFollower', jsonParser, function(req, res) {
   }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am updating followers');
     var bulk = db.collection('users').initializeUnorderedBulkOp();
     bulk.find(handle).update({ $push: myData });
     bulk.find(handle).update({$inc:{"numberOfFollowing" : 1}});
@@ -511,7 +486,6 @@ app.post('/removeFollower', jsonParser, function(req, res) {
   }
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am updating followers');
     var bulk = db.collection('users').initializeUnorderedBulkOp();
     bulk.find(handle).update({ $pull: myData });
     bulk.find(handle).update({$inc:{"numberOfFollowing" : -1}});
@@ -526,7 +500,6 @@ app.post('/removeFollower', jsonParser, function(req, res) {
 app.get('/getUpdate', cookieParser(), function(req, res){
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am finding a updated user info');
     findUser(db, req.cookies, function(){
       db.close();
       for(var i = 0; i<myUsers.length; i++){
@@ -544,14 +517,12 @@ app.post('/makeTweet', jsonParser,function(req, res) {
   var chirp = new Tweet(req.body);
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I added a new tweet to the database');
     insertTweet(db, chirp, function(){
       db.close();
     })
   })
   MongoClient.connect(url,function(err,db){
     assert.equal(null,err);
-    console.log('I am updating the tweets for the users');
     updateTweets(db, chirp, function(){
       db.close();
       res.sendStatus(200);
@@ -563,7 +534,6 @@ app.post('/getProfile', jsonParser, function(req, res) {
   var payload = req.body;
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am searching for selected user profile');
     findSelectedUser(db, payload, function(){
       db.close();
       var result = checkUser(payload);
@@ -596,7 +566,6 @@ app.post('/followers', jsonParser, function(req, res){
   var payload  = req.body;
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am finding the followers/following for the user');
     findUsers(db, payload, function(){
       db.close();
       var c = [];
@@ -618,7 +587,6 @@ app.post('/signup', jsonParser, function(req,res){
   myUsers.push(neophite);
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I added a new user to the database');
     insertUser(db, neophite, function(){
       db.close();
       res.cookie('user', x.ops[0]._id);
@@ -629,7 +597,6 @@ app.post('/signup', jsonParser, function(req,res){
   })
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am making a new user tweets');;
     insertNewTweeter(db,neophite, function(){
       db.close()
     })
@@ -640,7 +607,6 @@ app.post('/favs',jsonParser, function(req, res) {
   var payload = req.body;
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am finding the followers/following for the user');
     findTweets(db, payload, function(){
       db.close();
       var c = [];
@@ -671,14 +637,12 @@ app.post('/addfav', jsonParser, function(req, res) {
   var payload = req.body;
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am adding favorites to a person');
     addFavorite(db, payload, function(){
       db.close();
     })
   })
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am adding tweets with the favorites');
     var userHandle = {
       handle:payload.userHandle
     }
@@ -696,14 +660,12 @@ app.post('/removefav', jsonParser, function(req, res) {
   var payload = req.body;
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am removing favorites to a person');
     removeFavorite(db, payload, function(){
       db.close();
     })
   })
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am removing tweets with the favorites');
     var userHandle = {
       handle:payload.userHandle
     }
@@ -721,14 +683,12 @@ app.post('/addRetweet', jsonParser, function(req, res) {
   var payload = req.body;
   MongoClient.connect(url, function(err, db){
     assert.equal(null,err);
-    console.log('I am add retweets for the users');
     addRetweet(db, payload, function(){
       db.close();
     })
   })
   MongoClient.connect(url, function(err, db){
     assert.equal(null, err);
-    console.log('I am adding retweets to the tweets');
     var userHandle = {
       handle: payload.userHandle
     }
@@ -758,14 +718,12 @@ app.post('/removeRetweet', jsonParser, function(req, res) {
   var payload = req.body;
   MongoClient.connect(url, function(err, db){
     assert.equal(null,err);
-    console.log('I am add retweets for the users');
     removeRetweet(db, payload, function(){
       db.close();
     })
   })
   MongoClient.connect(url, function(err, db){
     assert.equal(null, err);
-    console.log('I am adding retweets to the tweets');
     var userHandle = {
       handle: payload.userHandle
     }
@@ -795,7 +753,6 @@ app.post('/messageList', jsonParser, function(req, res){
   var payload = req.body;
   MongoClient.connect(url, function(err, db){
     assert.equal(null,err);
-    console.log('I am getting messages for the user');
     findUsers(db, payload, function(){
       db.close();
       var c = []
@@ -815,7 +772,6 @@ app.post('/messageList', jsonParser, function(req, res){
   })
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am reseting the number of messages');
     var handle = {handle:payload.userHandle};
     db.collection('users').update(handle, {$set:{"numberOfMessages":0}})
     db.close();
@@ -826,7 +782,6 @@ app.post('/updateMessage', jsonParser, function(req, res) {
   var payload = req.body;
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am updating messages');
     var userHandle = {
       handle:payload.userHandle
     };
@@ -881,7 +836,6 @@ app.get('/notifications', cookieParser(), function(req, res){
   var user = req.cookies.id;
   MongoClient.connect(url, function(err,db){
     assert.equal(null, err);
-    console.log("i am reseting the number of new Notifications");
     var handle = {handle: user}
     db.collection('users').update(handle,{ $set: {"numberOfNotifications":0}})
     db.close();
@@ -893,11 +847,8 @@ app.post('/search', jsonParser, function(req, res){
   var payload = req.body;
   var c = [];
   var t = [];
-  console.log(payload);
-  console.log(payload.tags.length);
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am searching users');
     findUsers(db, payload, function(){
       db.close();
       for(var i = 0; i < payload.people.length; i++){
@@ -918,7 +869,6 @@ app.post('/search', jsonParser, function(req, res){
   })
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
-    console.log('I am searching tweets');
     findTweets(db, payload, function(){
       db.close();
       for(var i = 0; i < payload.tags.length; i++){

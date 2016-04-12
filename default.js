@@ -144,7 +144,6 @@ function getTweets(){
     if(xhr.status === 200){
       var result = JSON.parse(xhr.responseText)
       myTweets = result;
-      console.log(myTweets);
       getUserTimeline();
     }
   }
@@ -444,7 +443,6 @@ function addFollower1(target){
 function removeFollower(target){
   var parent = target.parentNode;
   var theParent = parent.getElementsByTagName('h1')[0];
-  console.log(theParent);
   var toFollow = theParent.dataset.id
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '/removeFollower', true);
@@ -617,7 +615,6 @@ function makeTweet() {
     mentions: mentions,
     picture: myUser.picture
   }
-  console.log(tags);
   var payload = JSON.stringify(myData);
   xhr.send(payload);
   xhr.onload = function(){
@@ -984,7 +981,6 @@ function getMessageList1(target){
   xhr.onload = function(){
     if(xhr.status === 200){
       var result = JSON.parse(xhr.responseText);
-      console.log(result);
       showMessagesContainer();
       appendMessageList(messageHandle,result);
     }
@@ -1370,7 +1366,6 @@ function search(){
       showSearchContainer();
       removePeople();
       removeTweets();
-      console.log(response);
       appendPeople(response.users);
       appendTweets(response.tweets)
     }
@@ -1682,7 +1677,6 @@ function myTarget(event){
   var target = ev.target;
   var id = target.id
   var handle;
-  console.log(target);
   var theTarget = target.dataset.id;
   if (theTarget == 'follow'){
     addFollower(target);
