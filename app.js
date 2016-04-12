@@ -7,8 +7,6 @@ var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
 var url = 'mongodb://localhost:27017/user'
-const EventEmitter = require('events');
-const myEvent = new EventEmitter();
 
 var myUsers= [];
 var globalUsers =[]
