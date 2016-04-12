@@ -32,6 +32,10 @@ var logoutIcon = document.getElementById('logoutIcon')
 var notificationNumber = document.getElementById('numberofNotications');
 var messageNumber = document.getElementById('numberOfMessages');
 var modaltext = document.getElementById('modaltext')
+var searchBar = document.getElementById('searchBar')
+var searchResultsPeople = document.getElementById('searchResultsPeople');
+var searchResultsTweets = document.getElementById('searchResultsTweets');
+var searchContainer = document.getElementById('searchContainer');
 var myUser = {};
 var myTweets = {};
 var followersInfo = {};
@@ -582,7 +586,7 @@ function getUpdatedUser(){
 }
 
 function makeTweet() {
-  var xhr = new XMLHttpRequest();
+ var xhr = new XMLHttpRequest();
   xhr.open('POST', '/makeTweet', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   var tweet = tweetBox.value;
@@ -613,6 +617,7 @@ function makeTweet() {
     mentions: mentions,
     picture: myUser.picture
   }
+  console.log(tags);
   var payload = JSON.stringify(myData);
   xhr.send(payload);
   xhr.onload = function(){
@@ -1063,7 +1068,7 @@ function appendMessageList(messageHandle,result){
 function sendMessage(target){
   var text = messageBox.value;
   var userHandle = myUser.handle;
-  var parent = target.parentNode.parentNode.parentNode.parentNode.firstChild.nextElementSibling.firstChild.nextSibling.firstChild.lastChild.getElementsByTagName('h1')[0]
+  var parent = target.parentNode.parentNode.parentNode.parentNode.parentNode.firstChild.nextElementSibling.firstChild.nextSibling.lastChild.getElementsByTagName('h1')[0]
   var messageHandle = parent.dataset.id;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'updateMessage', true);
@@ -1154,7 +1159,6 @@ function appendFollowers(result){
     var followingText = document.createTextNode('Unfollow');
     followingText.className="text-muted white small text-center";
     var followBtn = document.createElement('button');
-
     followBtn.setAttribute('data-id', 'follow')
     followBtn.className = "btn btn-primary"
     var followText = document.createTextNode('Follow');
@@ -1326,6 +1330,252 @@ function appendFavs(body){
       selectedTimeline.appendChild(panel);
     }
   }
+}
+
+function search(){
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/search', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  var search = searchBar.value;
+  var people = [];
+  var people2 = []
+  var tags = [];
+  var split  = search.split(/\s\w*/);
+  for(var i = 0; i<split.length; i++){
+    if(split[i].indexOf('@') !== -1){
+      people.push(split[i]);
+    } else if(split[i].indexOf('#') !== -1){
+      tags.push(split[i]);
+    }
+  }
+  for(var z =0; z < people.length; z++){
+    people2.push(people[z].split(/\@/));
+    people2[z].splice(0,1);
+  }
+  people.length = 0;
+  for(var y = 0; y < people2.length; y++){
+    people.push(people2[y][0]);
+  }
+  var myData = {
+    tags: tags,
+    people: people
+  }
+  var payload = JSON.stringify(myData);
+  xhr.send(payload);
+  xhr.onload = function(){
+    if(xhr.status ==200){
+      document.getElementById('userNavSearch').reset();
+      var response = JSON.parse(xhr.responseText);
+      showSearchContainer();
+      removePeople();
+      removeTweets();
+      console.log(response);
+      appendPeople(response.users);
+      appendTweets(response.tweets)
+    }
+  }
+}
+
+function appendPeople(response){
+  if(response.length == 0){
+    var div = document.createElement('div');
+    var h1 = document.createElement('h1');
+    var text = document.createTextNode('Sorry but no people could be found!');
+    h1.appendChild(text);
+    div.appendChild(h1);
+    searchResultsPeople.appendChild(div);
+  }else{
+    for(var i=0; i< response.length; i++){
+      var col = document.createElement('div');
+      col.className="col-xs-6 col-md-4"
+      var thumbnail = document.createElement('div')
+      thumbnail.className ="thumbnail"
+      var caption = document.createElement('div')
+      caption.className="caption text-center"
+      var picture = document.createElement('img');
+      picture.setAttribute('src', response[i].picture);
+      picture.setAttribute('alt', "Profile Pic")
+      picture.setAttribute('width', 60);
+      picture.setAttribute('height', 60);
+      picture.setAttribute('data-id', 'thumbnailProfile')
+      picture.className = 'img-rounded margin'
+      var br = document.createElement('br');
+      var userName = document.createElement('h1');
+      userName.className ="text-center low-margin";
+      var userHandle = document.createElement('p');
+      userName.setAttribute('data-id', response[i].handle)
+      userHandle.className = "text-center";
+      var userText = document.createElement('p');
+      userText.className = "small text-center";
+      var userNameText = document.createTextNode(captilizeFirstLetter(response[i].name));
+      var userHandleText = document.createTextNode('@'+response[i].handle);
+      var userTextNode = document.createTextNode(captilizeFirstLetter(response[i].text));
+      var followingBtn = document.createElement('button');
+      followingBtn.setAttribute('data-id', 'unfollow')
+      followingBtn.className="btn"
+      var followingText = document.createTextNode('Unfollow');
+      followingText.className="text-muted white small text-center";
+      var followBtn = document.createElement('button');
+      followBtn.setAttribute('data-id', 'follow')
+      followBtn.className = "btn btn-primary"
+      var followText = document.createTextNode('Follow');
+      followText.className="text-muted white small text-center";
+      followBtn.appendChild(followText)
+      followingBtn.appendChild(followingText)
+      userName.appendChild(userNameText);
+      userHandle.appendChild(userHandleText);
+      userText.appendChild(userTextNode);
+      caption.appendChild(userName);
+      caption.appendChild(userHandle);
+      caption.appendChild(userText);
+      caption.appendChild(br);
+      caption.appendChild(followBtn);
+      var loop = myUser.following
+      for(var z =0; z< loop.length; z++){
+        if(loop[z].handle == response[i].handle){
+          caption.removeChild(caption.lastChild);
+          caption.appendChild(followingBtn);
+          break;
+        }
+      }
+      if(myUser.handle == response[i].handle){
+        caption.removeChild(caption.lastChild);
+      }
+      thumbnail.appendChild(picture);
+      thumbnail.appendChild(caption);
+      col.appendChild(thumbnail)
+      searchResultsPeople.appendChild(col)
+    }
+  }
+}
+
+function appendTweets(response){
+  if(response.length == 0){
+    var div = document.createElement('div');
+    var h1 = document.createElement('h1');
+    var text = document.createTextNode('Sorry but no tweets could be found!');
+    h1.appendChild(text);
+    div.appendChild(h1);
+    searchResultsTweets.appendChild(div);
+  }else{
+    for(var z = 0; z <response.length; z++){
+      var panel = document.createElement('div');
+      panel.className = "panel panel-default no-bottom-margin"
+      var panelBody = document.createElement('div');
+      panelBody.className = "panel-body";
+      var media = document.createElement('div');
+      media.className = "media";
+      var mediaLeft = document.createElement('div');
+      mediaLeft.className = "media-left";
+      var mediaBody = document.createElement('div');
+      mediaBody.className = "media-body"
+      var picture = document.createElement('img')
+      picture.setAttribute('src', 'https://abs.twimg.com/sticky/default_profile_images/default_profile_0_200x200.png');
+      picture.setAttribute('alt', "Profile Pic");
+      picture.setAttribute('class', "img-rounded")
+      picture.setAttribute('width', "48");
+      picture.setAttribute('height', "48");
+      picture.setAttribute('data-id', 'profile')
+      var h5 = document.createElement('h5');
+      h5.setAttribute('data-id', response[z].handle)
+      h5.className="media-heading margin-bottom"
+      var p1 = document.createElement('p');
+      var p2 = document.createElement('p');
+      p2.setAttribute('data-id', response[z].number)
+      p2.setAttribute('data-tweet', response[z].text)
+      var handle = document.createTextNode('@' + response[z].handle)
+      var tweet = document.createTextNode(response[z].text);
+      var favIcon = document.createElement('i');
+      favIcon.className ="fa fa-heart-o";
+      favIcon.setAttribute('data-id', 'addfavorite');
+      if(myUser.favs.length != undefined){
+        for(var y = 0; y < myUser.favs.length; y++){
+          if (myUser.favs[y].number == response[z].number && myUser.favs[y].handle == response[z].handle){
+            favIcon.className="fa fa-heart red";
+            favIcon.setAttribute('data-id', 'unfavorite')
+          }
+        }
+      }
+      var retweetIcon = document.createElement('i');
+      retweetIcon.className = "fa fa-retweet";
+      retweetIcon.setAttribute('data-id', 'addRetweet');
+      if(response[z].re == 1 && response[z].retweeter == myUser.handle ){
+        retweetIcon.className = "fa fa-retweet blue";
+        retweetIcon.setAttribute('data-id', 'removeRetweet');
+      }
+      var fav = document.createElement('li');
+      fav.setAttribute('role', 'button');
+      var numberOfFavsp = document.createElement('a');
+      var numberOfFavs = document.createTextNode(' ' +response[z].numberOfFavs);
+      numberOfFavsp.setAttribute('data-id', 'getfavorites' )
+      var numberOfRetweetsp = document.createElement('a');
+      var numberOfRetweets = document.createTextNode(' ' +response[z].numberOfRetweets + "           ");
+      numberOfRetweetsp.setAttribute('data-id', 'getRetweets' )
+      var br = document.createElement('br');
+      var br2 = document.createElement('br');
+      var ul = document.createElement('ul')
+      ul.className = 'list-inline'
+      var retweet = document.createElement('li');
+      retweet.setAttribute('role', 'button');
+      numberOfRetweetsp.appendChild(numberOfRetweets);
+      retweet.appendChild(retweetIcon);
+      retweet.appendChild(numberOfRetweetsp);
+      numberOfFavsp.appendChild(numberOfFavs)
+      fav.appendChild(favIcon);
+      fav.appendChild(numberOfFavsp);
+      p2.appendChild(tweet);
+      p2.appendChild(br)
+      h5.appendChild(handle);
+      mediaBody.appendChild(h5);
+      mediaBody.appendChild(p2);
+      ul.appendChild(retweet);
+      ul.appendChild(fav);
+      mediaBody.appendChild(ul);
+      mediaLeft.appendChild(picture);
+      media.appendChild(mediaLeft);
+      media.appendChild(mediaBody);
+      panelBody.appendChild(media);
+      panel.appendChild(panelBody);
+      searchResultsTweets.appendChild(panel);
+      if(response[z].retweets.length != undefined){
+        for (var q = 0; q < response[z].retweets.length; q++){
+          if (response[z].retweets[q].handle == myUser.handle){
+            searchResultsTweets.removeChild(searchResultsTweets.lastChild);
+          }
+        }
+      }
+    }
+  }
+}
+
+function removePeople(){
+  var element = searchResultsPeople;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+}
+
+function removeTweets(){
+  var element = searchResultsTweets;
+  while(element.firstChild){
+    element.removeChild(element.firstChild);
+  }
+}
+
+function showSearchedPeople(){
+  searchResultsPeople.className ="row-fluid"
+}
+
+function hideSearchedPeople(){
+  searchResultsPeople.className ="hidden row-fluid"
+}
+
+function showSearchedTweets(){
+  searchResultsTweets.className = "row-fluid"
+}
+
+function hideSearchedTweets(){
+  searchResultsTweets.className = "hidden row-fluid"
 }
 
 function logout(){
@@ -1502,6 +1752,16 @@ function myTarget(event){
     makeTweet1();
   }else if(id=='navTweet'){
     $('#tweetAt').modal('show');
+  }else if(id=="userNavSearchBtn"){
+    search();
+  }else if(id == 'searchPeople'){
+    searchPeople.className = "active";
+    showSearchedPeople();
+    hideSearchedTweets();
+  }else if(id == 'searchTweets'){
+    searchTweets.className = "active";
+    hideSearchedPeople();
+    showSearchedTweets();
   }
 }
 
@@ -1555,11 +1815,24 @@ function showNotifcationsContainer(){
   selectedProfile.className="hidden";
   userProfile.className = "hidden";
   messagesContainer.className = "hidden"
+  hideSearchContainer();
   notificationContainer.className = "container-fluid"
+}
+
+function showSearchContainer(){
+  selectedProfile.className="hidden";
+  userProfile.className = "hidden";
+  messagesContainer.className = "hidden"
+  notificationContainer.className = "hidden"
+  searchContainer.className = "container-fluid"
 }
 
 function hideNotifcationsContainer(){
   notificationContainer.className = "hidden container-fluid"
+}
+
+function hideSearchContainer(){
+  searchContainer.className = "hidden container-fluid"
 }
 
 function removeNotifcations(){
