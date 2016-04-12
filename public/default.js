@@ -697,6 +697,7 @@ function appendSelectedProfile(result, callback){
   removeSelectedSuggestions();
   showSelctedSuggestions();
   hideMessagesContainer();
+  hideSearchContainer();
   var thumbnail = document.createElement('div')
   thumbnail.className ="thumbnail"
   var caption = document.createElement('div')
@@ -1379,10 +1380,11 @@ function search(){
 function appendPeople(response){
   if(response.length == 0){
     var div = document.createElement('div');
-    var h1 = document.createElement('h1');
+    var h4 = document.createElement('h4');
+    h4.className="text-center"
     var text = document.createTextNode('Sorry but no people could be found!');
-    h1.appendChild(text);
-    div.appendChild(h1);
+    h4.appendChild(text);
+    div.appendChild(h4);
     searchResultsPeople.appendChild(div);
   }else{
     for(var i=0; i< response.length; i++){
@@ -1452,10 +1454,11 @@ function appendPeople(response){
 function appendTweets(response){
   if(response.length == 0){
     var div = document.createElement('div');
-    var h1 = document.createElement('h1');
+    var h4 = document.createElement('h4');
+    h4.className="text-center"
     var text = document.createTextNode('Sorry but no tweets could be found!');
-    h1.appendChild(text);
-    div.appendChild(h1);
+    h4.appendChild(text);
+    div.appendChild(h4);
     searchResultsTweets.appendChild(div);
   }else{
     for(var z = 0; z <response.length; z++){
@@ -1755,11 +1758,13 @@ function myTarget(event){
   }else if(id=="userNavSearchBtn"){
     search();
   }else if(id == 'searchPeople'){
-    searchPeople.className = "active";
+    searchPeople.parentElement.className = "active";
+    searchTweets.parentElement.className = ""
     showSearchedPeople();
     hideSearchedTweets();
   }else if(id == 'searchTweets'){
-    searchTweets.className = "active";
+    searchPeople.parentElement.className =""
+    searchTweets.parentElement.className = "active";
     hideSearchedPeople();
     showSearchedTweets();
   }
@@ -1783,6 +1788,7 @@ function updateTimeline(){
   getUserTimeline();
   getSuggestions(suggestions);
   hideMessagesContainer();
+  hideSearchContainer();
 }
 
 function showSelctedSuggestions(){
@@ -1808,6 +1814,7 @@ function showMessagesContainer(){
   userProfile.className="hidden";
   selectedProfile.className = "hidden"
   notificationContainer.className="hidden"
+  hideSearchContainer();
   messagesContainer.className="container-fluid well";
 }
 
@@ -1824,7 +1831,7 @@ function showSearchContainer(){
   userProfile.className = "hidden";
   messagesContainer.className = "hidden"
   notificationContainer.className = "hidden"
-  searchContainer.className = "container-fluid"
+  searchContainer.className = "container-fluid well"
 }
 
 function hideNotifcationsContainer(){

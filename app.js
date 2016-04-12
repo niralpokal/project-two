@@ -894,6 +894,7 @@ app.post('/search', jsonParser, function(req, res){
   var c = [];
   var t = [];
   console.log(payload);
+  console.log(payload.tags.length);
   MongoClient.connect(url, function(err,db){
     assert.equal(null,err);
     console.log('I am searching users');
@@ -905,6 +906,13 @@ app.post('/search', jsonParser, function(req, res){
             c.push(globalUsers[z])
           }
         }
+      }
+      if(payload.tags.length == 0){
+        var myData = {
+          users:c,
+          tweets:t
+        }
+        res.json(myData)
       }
     })
   })
@@ -928,11 +936,13 @@ app.post('/search', jsonParser, function(req, res){
           }
         }
       }
+      if(payload.tags.length != 0){
       var myData = {
         users:c,
         tweets:t
+        }
+      res.json(myData)
       }
-      res.json(myData);
     })
   })
 })
