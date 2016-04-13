@@ -231,105 +231,108 @@ function getUserTimeline(){
   xhr.onload = function(){
     if(xhr.status === 200){
       var response = JSON.parse(xhr.responseText);
-      var followingTweets = _.sortBy(response, 'date');
-      appendUserTimeline(followingTweets, timeline);
+      var toSort = [];
+      for(var i = 0; i< response.length; i++){
+        var a = response[i].tweets;
+        for(var z = 0; z< a.length; z++){
+          toSort.push(a[z])
+        }
+      }
+      var followingTweets = _.sortBy(toSort, 'date').reverse();
+      appendUserTimeline(followingTweets, timeline);;
     }
   }
 };
 
 function appendUserTimeline(body, dom){
-  for(var i = 0; i<body.length; i++){
-    var innerTweets = body[i].tweets;
-    var img = body[i].picture;
-    for(var z = 0; z <innerTweets.length; z++){
-      var panel = document.createElement('div');
-      panel.className = "panel panel-default no-bottom-margin"
-      var panelBody = document.createElement('div');
-      panelBody.className = "panel-body";
-      var media = document.createElement('div');
-      media.className = "media";
-      var mediaLeft = document.createElement('div');
-      mediaLeft.className = "media-left";
-      var mediaBody = document.createElement('div');
-      mediaBody.className = "media-body"
-      var picture = document.createElement('img')
-      picture.setAttribute('src', img);
-      picture.setAttribute('alt', "Profile Pic");
-      picture.setAttribute('class', "img-rounded")
-      picture.setAttribute('width', "48");
-      picture.setAttribute('height', "48");
-      picture.setAttribute('data-id', 'profile')
-      var h5 = document.createElement('h5');
-      h5.setAttribute('data-id', innerTweets[z].handle)
-      h5.className="media-heading margin-bottom"
-      var p1 = document.createElement('p');
-      var p2 = document.createElement('p');
-      p2.setAttribute('data-id', innerTweets[z].number)
-      p2.setAttribute('data-tweet', innerTweets[z].text)
-      var handle = document.createTextNode('@' + innerTweets[z].handle)
-      var tweet = document.createTextNode(innerTweets[z].text);
-      var favIcon = document.createElement('i');
-      favIcon.className ="fa fa-heart-o";
-      favIcon.setAttribute('data-id', 'addfavorite');
-      if(myUser.favs.length != undefined){
-        for(var y = 0; y < myUser.favs.length; y++){
-          if (myUser.favs[y].number == innerTweets[z].number && myUser.favs[y].handle == innerTweets[z].handle){
-            favIcon.className="fa fa-heart red";
-            favIcon.setAttribute('data-id', 'unfavorite')
-          }
+  for(var i = 0; i <body.length; i++){
+    var panel = document.createElement('div');
+    panel.className = "panel panel-default no-bottom-margin"
+    var panelBody = document.createElement('div');
+    panelBody.className = "panel-body";
+    var media = document.createElement('div');
+    media.className = "media";
+    var mediaLeft = document.createElement('div');
+    mediaLeft.className = "media-left";
+    var mediaBody = document.createElement('div');
+    mediaBody.className = "media-body"
+    var picture = document.createElement('img')
+    picture.setAttribute('src', body[i].picture);
+    picture.setAttribute('alt', "Profile Pic");
+    picture.setAttribute('class', "img-rounded")
+    picture.setAttribute('width', "48");
+    picture.setAttribute('height', "48");
+    picture.setAttribute('data-id', 'profile')
+    var h5 = document.createElement('h5');
+    h5.setAttribute('data-id', body[i].handle)
+    h5.className="media-heading margin-bottom"
+    var p1 = document.createElement('p');
+    var p2 = document.createElement('p');
+    p2.setAttribute('data-id', body[i].number)
+    p2.setAttribute('data-tweet', body[i].text)
+    var handle = document.createTextNode('@' + body[i].handle)
+    var tweet = document.createTextNode(body[i].text);
+    var favIcon = document.createElement('i');
+    favIcon.className ="fa fa-heart-o";
+    favIcon.setAttribute('data-id', 'addfavorite');
+    if(myUser.favs.length != undefined){
+      for(var y = 0; y < myUser.favs.length; y++){
+        if (myUser.favs[y].number == body[i].number && myUser.favs[y].handle == body[i].handle){
+          favIcon.className="fa fa-heart red";
+          favIcon.setAttribute('data-id', 'unfavorite')
         }
       }
-      var retweetIcon = document.createElement('i');
+    }
+    var retweetIcon = document.createElement('i');
+    retweetIcon.className = "fa fa-retweet";
+    retweetIcon.setAttribute('data-id', 'addRetweet');
+    if(body[i].re == 1 && body[i].retweeter == myUser.handle ){
+      retweetIcon.className = "fa fa-retweet blue";
+      retweetIcon.setAttribute('data-id', 'removeRetweet');
+      handle = document.createTextNode('You retweeted '+'@' + body[i].handle);
+    } else if(body[i].re == 1){
+      handle = document.createTextNode('@'+ body[i].retweeter + ' retweeted '+'@' + body[i].handle);
       retweetIcon.className = "fa fa-retweet";
-      retweetIcon.setAttribute('data-id', 'addRetweet');
-      if(innerTweets[z].re == 1 && innerTweets[z].retweeter == myUser.handle ){
-        retweetIcon.className = "fa fa-retweet blue";
-        retweetIcon.setAttribute('data-id', 'removeRetweet');
-        handle = document.createTextNode('You retweeted '+'@' + innerTweets[z].handle);
-      } else if(innerTweets[z].re == 1){
-        handle = document.createTextNode('@'+ innerTweets[z].retweeter + ' retweeted '+'@' + innerTweets[z].handle);
-        retweetIcon.className = "fa fa-retweet";
-        retweetIcon.setAttribute('data-id', 'cant');
-      }
-      var fav = document.createElement('li');
-      fav.setAttribute('role', 'button');
-      var numberOfFavsp = document.createElement('a');
-      var numberOfFavs = document.createTextNode(' ' +innerTweets[z].numberOfFavs);
-      numberOfFavsp.setAttribute('data-id', 'getfavorites' )
-      var numberOfRetweetsp = document.createElement('a');
-      var numberOfRetweets = document.createTextNode(' ' +innerTweets[z].numberOfRetweets + "           ");
-      numberOfRetweetsp.setAttribute('data-id', 'getRetweets' )
-      var br = document.createElement('br');
-      var br2 = document.createElement('br');
-      var ul = document.createElement('ul')
-      ul.className = 'list-inline'
-      var retweet = document.createElement('li');
-      retweet.setAttribute('role', 'button');
-      numberOfRetweetsp.appendChild(numberOfRetweets);
-      retweet.appendChild(retweetIcon);
-      retweet.appendChild(numberOfRetweetsp);
-      numberOfFavsp.appendChild(numberOfFavs)
-      fav.appendChild(favIcon);
-      fav.appendChild(numberOfFavsp);
-      p2.appendChild(tweet);
-      p2.appendChild(br)
-      h5.appendChild(handle);
-      mediaBody.appendChild(h5);
-      mediaBody.appendChild(p2);
-      ul.appendChild(retweet);
-      ul.appendChild(fav);
-      mediaBody.appendChild(ul);
-      mediaLeft.appendChild(picture);
-      media.appendChild(mediaLeft);
-      media.appendChild(mediaBody);
-      panelBody.appendChild(media);
-      panel.appendChild(panelBody);
-      dom.appendChild(panel);
-      if(innerTweets[z].retweets.length != undefined){
-        for (var q = 0; q < innerTweets[z].retweets.length; q++){
-          if (innerTweets[z].retweets[q].handle == myUser.handle){
-            dom.removeChild(dom.lastChild);
-          }
+      retweetIcon.setAttribute('data-id', 'cant');
+    }
+    var fav = document.createElement('li');
+    fav.setAttribute('role', 'button');
+    var numberOfFavsp = document.createElement('a');
+    var numberOfFavs = document.createTextNode(' ' +body[i].numberOfFavs);
+    numberOfFavsp.setAttribute('data-id', 'getfavorites' )
+    var numberOfRetweetsp = document.createElement('a');
+    var numberOfRetweets = document.createTextNode(' ' +body[i].numberOfRetweets + "           ");
+    numberOfRetweetsp.setAttribute('data-id', 'getRetweets' )
+    var br = document.createElement('br');
+    var br2 = document.createElement('br');
+    var ul = document.createElement('ul')
+    ul.className = 'list-inline'
+    var retweet = document.createElement('li');
+    retweet.setAttribute('role', 'button');
+    numberOfRetweetsp.appendChild(numberOfRetweets);
+    retweet.appendChild(retweetIcon);
+    retweet.appendChild(numberOfRetweetsp);
+    numberOfFavsp.appendChild(numberOfFavs)
+    fav.appendChild(favIcon);
+    fav.appendChild(numberOfFavsp);
+    p2.appendChild(tweet);
+    p2.appendChild(br)
+    h5.appendChild(handle);
+    mediaBody.appendChild(h5);
+    mediaBody.appendChild(p2);
+    ul.appendChild(retweet);
+    ul.appendChild(fav);
+    mediaBody.appendChild(ul);
+    mediaLeft.appendChild(picture);
+    media.appendChild(mediaLeft);
+    media.appendChild(mediaBody);
+    panelBody.appendChild(media);
+    panel.appendChild(panelBody);
+    dom.appendChild(panel);
+    if(body[i].retweets.length != undefined){
+      for (var q = 0; q < body[i].retweets.length; q++){
+        if (body[i].retweets[q].handle == myUser.handle){
+          dom.removeChild(dom.lastChild);
         }
       }
     }
@@ -584,7 +587,7 @@ function getUpdatedUser(){
 }
 
 function makeTweet() {
- var xhr = new XMLHttpRequest();
+  var xhr = new XMLHttpRequest();
   xhr.open('POST', '/makeTweet', true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   var tweet = tweetBox.value;
@@ -838,8 +841,16 @@ function getSelectedTimeline(result){
   xhr.send(payload);
   xhr.onload = function(){
     if(xhr.status === 200){
-      var body = JSON.parse(xhr.responseText);
-      appendUserTimeline(body, selectedTimeline);
+      var response = JSON.parse(xhr.responseText);
+      var toSort = [];
+      for(var i = 0; i< response.length; i++){
+        var a = response[i].tweets;
+        for(var z = 0; z< a.length; z++){
+          toSort.push(a[z])
+        }
+      }
+      var followingTweets = _.sortBy(toSort, 'date').reverse();
+      appendUserTimeline(followingTweets, selectedTimeline);
     }
   }
 }
@@ -1115,7 +1126,15 @@ function getFavs(result){
   xhr.send(payload);
   xhr.onload = function(){
     if(xhr.status ===200){
-      var answer = JSON.parse(xhr.responseText);
+      var response = JSON.parse(xhr.responseText);
+      var toSort = [];
+      for(var i = 0; i< response.length; i++){
+        var a = response[i].tweets;
+        for(var z = 0; z< a.length; z++){
+          toSort.push(a[z])
+        }
+      }
+      var answer = _.sortBy(toSort, 'date').reverse();
       appendFavs(answer);
     }
   }
@@ -1247,85 +1266,81 @@ function appendFavs(body){
   removeSelectedSuggestions();
   showSelctedSuggestions();
   getSuggestions(userSuggestions);
-  for(var i = 0; i<body.length; i++){
-    var innerTweets = body[i].tweets;
-    var img = body[i].picture;
-    for(var z = 0; z <innerTweets.length; z++){
-      var panel = document.createElement('div');
-      panel.className = "panel panel-default"
-      var panelBody = document.createElement('div');
-      panelBody.className = "panel-body";
-      var media = document.createElement('div');
-      media.className = "media";
-      var mediaLeft = document.createElement('div');
-      mediaLeft.className = "media-left";
-      var mediaBody = document.createElement('div');
-      mediaBody.className = "media-body"
-      var picture = document.createElement('img')
-      picture.setAttribute('src', img);
-      picture.setAttribute('alt', "Profile Pic");
-      picture.setAttribute('class', "img-rounded")
-      picture.setAttribute('width', "48");
-      picture.setAttribute('height', "48");
-      picture.setAttribute('data-id', 'profile')
-      var h5 = document.createElement('h5');
-      h5.setAttribute('data-id', innerTweets[z].handle)
-      var p1 = document.createElement('p');
-      var p2 = document.createElement('p');
-      p2.setAttribute('data-id', innerTweets[z].number)
-      p2.setAttribute('data-tweet', innerTweets[z].text)
-      var handle = document.createTextNode('@' + innerTweets[z].handle)
-      var tweet = document.createTextNode(innerTweets[z].text);
-      var favIcon = document.createElement('i');
-      favIcon.className ="fa fa-heart red";
-      favIcon.setAttribute('data-id', 'unfavorite');
-      var retweetIcon = document.createElement('i');
+  for(var i = 0; i <body.length; i++){
+    var panel = document.createElement('div');
+    panel.className = "panel panel-default no-bottom-margin"
+    var panelBody = document.createElement('div');
+    panelBody.className = "panel-body";
+    var media = document.createElement('div');
+    media.className = "media";
+    var mediaLeft = document.createElement('div');
+    mediaLeft.className = "media-left";
+    var mediaBody = document.createElement('div');
+    mediaBody.className = "media-body"
+    var picture = document.createElement('img')
+    picture.setAttribute('src', body[i].picture);
+    picture.setAttribute('alt', "Profile Pic");
+    picture.setAttribute('class', "img-rounded")
+    picture.setAttribute('width', "48");
+    picture.setAttribute('height', "48");
+    picture.setAttribute('data-id', 'profile')
+    var h5 = document.createElement('h5');
+    h5.setAttribute('data-id', body[i].handle)
+    h5.className="media-heading margin-bottom"
+    var p2 = document.createElement('p');
+    p2.setAttribute('data-id', body[i].number)
+    p2.setAttribute('data-tweet', body[i].text)
+    var handle = document.createTextNode('@' + body[i].handle);
+    var tweet = document.createTextNode(body[i].text);
+    var favIcon = document.createElement('i');
+    favIcon.className="fa fa-heart red";
+    favIcon.setAttribute('data-id', 'unfavorite')
+    var retweetIcon = document.createElement('i');
+    retweetIcon.className = "fa fa-retweet";
+    retweetIcon.setAttribute('data-id', 'addRetweet');
+    if(body[i].re == 1 && body[i].retweeter == myUser.handle ){
+      retweetIcon.className = "fa fa-retweet blue";
+      retweetIcon.setAttribute('data-id', 'removeRetweet');
+      handle = document.createTextNode('You retweeted '+'@' + body[i].handle);
+    } else if(body[i].re == 1){
+      handle = document.createTextNode('@'+ body[i].retweeter + ' retweeted '+'@' + body[i].handle);
       retweetIcon.className = "fa fa-retweet";
-      retweetIcon.setAttribute('data-id', 'addRetweet');
-      if(innerTweets[z].retweets.length != undefined){
-        for (var q = 0; q < innerTweets[z].retweets.length; q++){
-          if (innerTweets[z].retweets[q].handle == myUser.handle){
-            retweetIcon.className = "fa fa-retweet blue";
-            retweetIcon.setAttribute('data-id', 'removeRetweet');
-            handle = document.createTextNode('You retweeted '+'@' + innerTweets[z].handle)
-          }
-        }
-      }
-      var fav = document.createElement('li');
-      fav.setAttribute('role', 'button');
-      var numberOfRetweetsp = document.createElement('a');
-      var numberOfRetweets = document.createTextNode(' ' +innerTweets[z].numberOfRetweets + "           ");
-      numberOfRetweetsp.setAttribute('data-id', 'getRetweets' )
-      var numberOfFavsp = document.createElement('a');
-      var numberOfFavs = document.createTextNode(' ' +innerTweets[z].numberOfFavs);
-      numberOfFavsp.setAttribute('data-id', 'getfavorites' )
-      var br = document.createElement('br');
-      var br2 = document.createElement('br');
-      var ul = document.createElement('ul')
-      ul.className = 'list-inline'
-      var retweet = document.createElement('li');
-      retweet.setAttribute('role', 'button');
-      numberOfRetweetsp.appendChild(numberOfRetweets);
-      retweet.appendChild(retweetIcon);
-      retweet.appendChild(numberOfRetweetsp);
-      numberOfFavsp.appendChild(numberOfFavs)
-      fav.appendChild(favIcon);
-      fav.appendChild(numberOfFavsp);
-      p2.appendChild(tweet);
-      p2.appendChild(br)
-      h5.appendChild(handle);
-      mediaBody.appendChild(h5);
-      mediaBody.appendChild(p2);
-      ul.appendChild(retweet);
-      ul.appendChild(fav);
-      mediaBody.appendChild(ul);
-      mediaLeft.appendChild(picture);
-      media.appendChild(mediaLeft);
-      media.appendChild(mediaBody);
-      panelBody.appendChild(media);
-      panel.appendChild(panelBody);
-      selectedTimeline.appendChild(panel);
+      retweetIcon.setAttribute('data-id', 'cant');
     }
+    var fav = document.createElement('li');
+    fav.setAttribute('role', 'button');
+    var numberOfFavsp = document.createElement('a');
+    var numberOfFavs = document.createTextNode(' ' +body[i].numberOfFavs);
+    numberOfFavsp.setAttribute('data-id', 'getfavorites' )
+    var numberOfRetweetsp = document.createElement('a');
+    var numberOfRetweets = document.createTextNode(' ' +body[i].numberOfRetweets + "           ");
+    numberOfRetweetsp.setAttribute('data-id', 'getRetweets' )
+    var br = document.createElement('br');
+    var br2 = document.createElement('br');
+    var ul = document.createElement('ul')
+    ul.className = 'list-inline'
+    var retweet = document.createElement('li');
+    retweet.setAttribute('role', 'button');
+    numberOfRetweetsp.appendChild(numberOfRetweets);
+    retweet.appendChild(retweetIcon);
+    retweet.appendChild(numberOfRetweetsp);
+    numberOfFavsp.appendChild(numberOfFavs)
+    fav.appendChild(favIcon);
+    fav.appendChild(numberOfFavsp);
+    p2.appendChild(tweet);
+    p2.appendChild(br)
+    h5.appendChild(handle);
+    mediaBody.appendChild(h5);
+    mediaBody.appendChild(p2);
+    ul.appendChild(retweet);
+    ul.appendChild(fav);
+    mediaBody.appendChild(ul);
+    mediaLeft.appendChild(picture);
+    media.appendChild(mediaLeft);
+    media.appendChild(mediaBody);
+    panelBody.appendChild(media);
+    panel.appendChild(panelBody);
+    selectedTimeline.appendChild(panel);
   }
 }
 
@@ -1468,7 +1483,7 @@ function appendTweets(response){
       var mediaBody = document.createElement('div');
       mediaBody.className = "media-body"
       var picture = document.createElement('img')
-      picture.setAttribute('src', 'https://abs.twimg.com/sticky/default_profile_images/default_profile_0_200x200.png');
+      picture.setAttribute('src', response[z].picture);
       picture.setAttribute('alt', "Profile Pic");
       picture.setAttribute('class', "img-rounded")
       picture.setAttribute('width', "48");

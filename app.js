@@ -696,7 +696,7 @@ app.post('/addRetweet', jsonParser, function(req, res) {
       retweeter: payload.userHandle,
       numberOfRetweets: Number(payload.retweetNumber),
       numberOfFavs: 0,
-      retweets: '1',
+      retweets: "1",
       re: 1,
       text: payload.tweetText
     }
@@ -731,7 +731,7 @@ app.post('/removeRetweet', jsonParser, function(req, res) {
       retweeter: payload.userHandle,
       numberOfRetweets: Number(payload.retweetNumber),
       numberOfFavs: 0,
-      retweets: '1',
+      retweets:"1",
       re: 1,
       text: payload.tweetText
     }
