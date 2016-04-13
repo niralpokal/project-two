@@ -1,2 +1,2 @@
 # Tweeter
-![Picture](/Users/Niral/Desktop/1.png)
+![Picture](/1.png )
