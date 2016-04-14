@@ -1656,6 +1656,8 @@ function appendNotifications(){
         panelHeading.className = "panel-heading grey-background"
         var pic = document.createElement('img')
         pic.setAttribute('src', x.picture);
+        pic.setAttribute('data-id', 'selectNotification');
+        pic.setAttribute('data-name', x.handle);
         pic.setAttribute('height', 30);
         pic.setAttribute('width', 30);
         pic.className = "img-rounded float-left"
@@ -1777,6 +1779,9 @@ function myTarget(event){
     searchTweets.parentElement.className = "active";
     hideSearchedPeople();
     showSearchedTweets();
+  }else if(theTarget == 'selectNotification'){
+    console.log(target);
+    getSelectedProfile(target.dataset.name, getSelectedTimeline);
   }
 }
 
