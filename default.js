@@ -1614,6 +1614,7 @@ function goToLanding(){
   removeMessageInfo();
   removeNotifcations();
   hideNotifcationsContainer();
+  hideSearchContainer();
   dashboard.className = "hidden";
   selectedProfile.className = "container-fluid hidden"
   userProfile.className = "container-fluid well";
@@ -1912,7 +1913,9 @@ function removeSelectedTimline(){
 };
 
 function captilizeFirstLetter(string){
-  return string.charAt(0).toUpperCase() + string.slice(1);
+  if(typeof(string.charAt(0) !== undefined)){
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
 };
 
 document.body.addEventListener('click', myTarget)

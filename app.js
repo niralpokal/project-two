@@ -6,7 +6,7 @@ var jsonParser = bodyParser.json();
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
-var url = 'mongodb://localhost:27017/user'
+var url = 'mongodb://test:test@ds023500.mlab.com:23500/tweeter'
 
 var myUsers= [];
 var globalUsers =[]
@@ -20,6 +20,7 @@ function User(user){
   this.handle = user.id;
   this.caption = '';
   this.tweets = [];
+  this.text = 'Getting odd is better than getting even.'
   this.numberOfTweets = 0;
   this.followers = [];
   this.following = [];
@@ -32,6 +33,7 @@ function User(user){
   this.numberOfMessages = 0;
   this.picture = "https://abs.twimg.com/sticky/default_profile_images/default_profile_0_200x200.png"
   this.favs = [];
+  this.numberOfFavs = 0;
 }
 
 function Tweet(tweet){
@@ -411,7 +413,6 @@ app.get('/userTimeline', cookieParser(), function(req, res) {
           res.json(payload);
         })
       })
-      break;
     }
   }
 })
@@ -428,7 +429,6 @@ app.get('/suggestions', cookieParser(), function(req, res) {
           res.json(payload);
         })
       })
-      break;
     }
   }
 });

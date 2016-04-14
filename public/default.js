@@ -329,7 +329,7 @@ function appendUserTimeline(body, dom){
     panelBody.appendChild(media);
     panel.appendChild(panelBody);
     dom.appendChild(panel);
-    if(body[i].retweets.length !== 0){
+    if(body[i].retweets.length != undefined){
       for (var q = 0; q < body[i].retweets.length; q++){
         if (body[i].retweets[q].handle == myUser.handle){
           dom.removeChild(dom.lastChild);
@@ -1287,13 +1287,10 @@ function appendFavs(body){
     var h5 = document.createElement('h5');
     h5.setAttribute('data-id', body[i].handle)
     h5.className="media-heading margin-bottom"
-    var p1 = document.createElement('p');
-    p1.className="small"
     var p2 = document.createElement('p');
     p2.setAttribute('data-id', body[i].number)
     p2.setAttribute('data-tweet', body[i].text)
     var handle = document.createTextNode('@' + body[i].handle);
-    var date = document.createTextNode(body[i].date)
     var tweet = document.createTextNode(body[i].text);
     var favIcon = document.createElement('i');
     favIcon.className="fa fa-heart red";
@@ -1331,10 +1328,8 @@ function appendFavs(body){
     fav.appendChild(favIcon);
     fav.appendChild(numberOfFavsp);
     p2.appendChild(tweet);
-    p1.appendChild(date);
     p2.appendChild(br)
     h5.appendChild(handle);
-    h5.appendChild(p1)
     mediaBody.appendChild(h5);
     mediaBody.appendChild(p2);
     ul.appendChild(retweet);
@@ -1619,6 +1614,7 @@ function goToLanding(){
   removeMessageInfo();
   removeNotifcations();
   hideNotifcationsContainer();
+  hideSearchContainer();
   dashboard.className = "hidden";
   selectedProfile.className = "container-fluid hidden"
   userProfile.className = "container-fluid well";
@@ -1800,6 +1796,7 @@ function updateTimeline(){
   removeSuggestions();
   appendUserInfo();
   getUserTimeline();
+
   getSuggestions(suggestions);
   hideMessagesContainer();
   hideSearchContainer();
@@ -1917,7 +1914,10 @@ function removeSelectedTimline(){
 };
 
 function captilizeFirstLetter(string){
-  return string.charAt(0).toUpperCase() + string.slice(1);
+  console.log(string);
+  if(typeof(string.charAt(0) !== undefined)){
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
 };
 
 document.body.addEventListener('click', myTarget)
