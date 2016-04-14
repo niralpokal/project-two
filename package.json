@@ -1,0 +1,34 @@
+{
+  "name": "project-two",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "NODE=production node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/niralpokal/tweeter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/niralpokal/tweeter/issues"
+  },
+  "homepage": "https://github.com/niralpokal/tweeter#readme",
+  "dependencies": {
+    "assert": "^1.3.0",
+    "body-parser": "^1.15.0",
+    "cookie-parser": "^1.4.1",
+    "express": "^4.13.4",
+    "gulp": "^3.9.1",
+    "mongodb": "^2.1.11"
+  },
+  "devDependencies": {
+    "gulp-nodemon": "^2.0.6"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "keywords": []
+}
