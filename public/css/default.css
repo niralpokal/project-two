@@ -29,9 +29,9 @@
   background: linear-gradient(to left, #00d2ff , #3a7bd5);
   border-color: linear-gradient(to left, #00d2ff , #3a7bd5);
   margin-bottom: 0;
-  height:60px;
+  min-height:60px;
 }
-#navTweet {margin-left: 10px; }
+#navTweet {margin-left: 5px; }
 #userHome { color: white; }
 #userMoments { color: white; }
 #userNotifications { color: white; }
@@ -44,6 +44,14 @@
 #selectedNav {
   display: inline-block;
   float: none;
+}
+#searchBar{
+  max-width: 120px !important;
+}
+.userBtns {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip; 
 }
 .blue { color: #3498db !important; }
 .red { color: #EB0000 !important; }
