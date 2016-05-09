@@ -164,10 +164,10 @@ function appendUserInfo(){
   picture.setAttribute('class', "img-responsive")
   picture.setAttribute('data-id', 'thumbnailProfile')
   var userName = document.createElement('h1');
-  userName.className ="text-center margin"
+  userName.className ="text-center margin userBtns"
   userName.setAttribute('data-id', myUser.handle)
   var userHandle = document.createElement('p');
-  userHandle.className = "text-center"
+  userHandle.className = "text-center userBtns"
   var buttonDiv = document.createElement('div');
   buttonDiv.className = "row"
   var column1 = document.createElement('div')
@@ -191,11 +191,11 @@ function appendUserInfo(){
   var numOfFollowers = document.createTextNode(user.numberOfFollowers);
   var numOfFollowing = document.createTextNode(user.numberOfFollowing);
   var tweets = document.createElement('p');
-  tweets.className="text-muted small text-center"
+  tweets.className="text-muted small text-center userBtns"
   var followers = document.createElement('p');
-  followers.className ="text-muted small text-center"
+  followers.className ="text-muted small text-center userBtns"
   var following = document.createElement('p');
-  following.className="text-muted small text-center"
+  following.className="text-muted small text-center userBtns"
   var tweetsText = document.createTextNode('Tweets')
   var followingText = document.createTextNode('Following')
   var followersText = document.createTextNode('Followers')
